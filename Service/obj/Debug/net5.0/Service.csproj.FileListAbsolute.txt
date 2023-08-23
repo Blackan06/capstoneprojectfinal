@@ -1,0 +1,17 @@
+F:\FPTHCMAdventures\Service\bin\Debug\net5.0\Service.deps.json
+F:\FPTHCMAdventures\Service\bin\Debug\net5.0\Service.dll
+F:\FPTHCMAdventures\Service\bin\Debug\net5.0\Service.pdb
+F:\FPTHCMAdventures\Service\bin\Debug\net5.0\BusinessObjects.dll
+F:\FPTHCMAdventures\Service\bin\Debug\net5.0\DataAccess.dll
+F:\FPTHCMAdventures\Service\bin\Debug\net5.0\DataAccess.pdb
+F:\FPTHCMAdventures\Service\bin\Debug\net5.0\BusinessObjects.pdb
+F:\FPTHCMAdventures\Service\obj\Debug\net5.0\Service.csproj.AssemblyReference.cache
+F:\FPTHCMAdventures\Service\obj\Debug\net5.0\Service.GeneratedMSBuildEditorConfig.editorconfig
+F:\FPTHCMAdventures\Service\obj\Debug\net5.0\Service.AssemblyInfoInputs.cache
+F:\FPTHCMAdventures\Service\obj\Debug\net5.0\Service.AssemblyInfo.cs
+F:\FPTHCMAdventures\Service\obj\Debug\net5.0\Service.csproj.CoreCompileInputs.cache
+F:\FPTHCMAdventures\Service\obj\Debug\net5.0\Service.csproj.CopyComplete
+F:\FPTHCMAdventures\Service\obj\Debug\net5.0\Service.dll
+F:\FPTHCMAdventures\Service\obj\Debug\net5.0\refint\Service.dll
+F:\FPTHCMAdventures\Service\obj\Debug\net5.0\Service.pdb
+F:\FPTHCMAdventures\Service\obj\Debug\net5.0\ref\Service.dll

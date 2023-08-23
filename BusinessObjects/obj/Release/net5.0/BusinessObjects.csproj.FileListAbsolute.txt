@@ -1,0 +1,15 @@
+F:\FPTHCMAdventures\BusinessObjects\bin\Release\net5.0\BusinessObjects.deps.json
+F:\FPTHCMAdventures\BusinessObjects\bin\Release\net5.0\BusinessObjects.runtimeconfig.json
+F:\FPTHCMAdventures\BusinessObjects\bin\Release\net5.0\BusinessObjects.runtimeconfig.dev.json
+F:\FPTHCMAdventures\BusinessObjects\bin\Release\net5.0\BusinessObjects.dll
+F:\FPTHCMAdventures\BusinessObjects\bin\Release\net5.0\BusinessObjects.pdb
+F:\FPTHCMAdventures\BusinessObjects\obj\Release\net5.0\BusinessObjects.csproj.AssemblyReference.cache
+F:\FPTHCMAdventures\BusinessObjects\obj\Release\net5.0\BusinessObjects.GeneratedMSBuildEditorConfig.editorconfig
+F:\FPTHCMAdventures\BusinessObjects\obj\Release\net5.0\BusinessObjects.AssemblyInfoInputs.cache
+F:\FPTHCMAdventures\BusinessObjects\obj\Release\net5.0\BusinessObjects.AssemblyInfo.cs
+F:\FPTHCMAdventures\BusinessObjects\obj\Release\net5.0\BusinessObjects.csproj.CoreCompileInputs.cache
+F:\FPTHCMAdventures\BusinessObjects\obj\Release\net5.0\BusinessObjects.dll
+F:\FPTHCMAdventures\BusinessObjects\obj\Release\net5.0\refint\BusinessObjects.dll
+F:\FPTHCMAdventures\BusinessObjects\obj\Release\net5.0\BusinessObjects.pdb
+F:\FPTHCMAdventures\BusinessObjects\obj\Release\net5.0\BusinessObjects.genruntimeconfig.cache
+F:\FPTHCMAdventures\BusinessObjects\obj\Release\net5.0\ref\BusinessObjects.dll
