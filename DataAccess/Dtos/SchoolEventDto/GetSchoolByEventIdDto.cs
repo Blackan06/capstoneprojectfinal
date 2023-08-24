@@ -1,0 +1,25 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Text.Json.Serialization;
+using System.Threading.Tasks;
+
+namespace DataAccess.Dtos.SchoolEventDto
+{
+    public class GetSchoolByEventIdDto
+    {
+        public Guid Id { get; set; }
+        public Guid SchoolId { get; set; }
+        public string EventName { get; set; }
+        public string SchoolName { get; set; }
+        public DateTime StartTime { get; set; }
+        public DateTime EndTime { get; set; }
+        public string ApprovalStatus { get; set; }
+        public string Status { get; set; }
+        public string Email { get; set; }
+        public string PhoneNumber { get; set; }
+        [JsonIgnore]
+        public DateTime CreatedAt { get; set; }
+    }
+}

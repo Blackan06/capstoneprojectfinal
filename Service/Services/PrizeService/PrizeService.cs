@@ -16,16 +16,13 @@ namespace Service.Services.PrizeService
     {
         private readonly IPrizeRepository _prizeRepository;
         private readonly IMapper _mapper;
-        MapperConfiguration config = new MapperConfiguration(cfg =>
-        {
-            cfg.AddProfile(new MapperConfig());
-        });
+        
         public PrizeService(IPrizeRepository prizeRepository, IMapper mapper)
         {
             _prizeRepository = prizeRepository;
             _mapper = mapper;
         }
-        private void TimeZoneVietName(DateTime dateTime)
+        private DateTime TimeZoneVietName(DateTime dateTime)
         {
             TimeZoneInfo vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
 
@@ -34,6 +31,7 @@ namespace Service.Services.PrizeService
 
             // Chuyển múi giờ từ UTC sang múi giờ Việt Nam
             dateTime = TimeZoneInfo.ConvertTimeFromUtc(utcNow, vietnamTimeZone);
+            return dateTime;
         }
         public async Task<ServiceResponse<Guid>> CreateNewPrize(CreatePrizeDto createPrizeDto)
         {
@@ -46,12 +44,11 @@ namespace Service.Services.PrizeService
                     StatusCode = 400
                 };
             }
-            TimeZoneVietName(createPrizeDto.CreatedAt);
 
             createPrizeDto.Description = createPrizeDto.Description.Trim();
             createPrizeDto.Name = createPrizeDto.Name.Trim();
-            var mapper = config.CreateMapper();
-            var createPrize = mapper.Map<Prize>(createPrizeDto);
+            createPrizeDto.CreatedAt = TimeZoneVietName(createPrizeDto.CreatedAt);
+            var createPrize = _mapper.Map<Prize>(createPrizeDto);
             createPrize.Id = Guid.NewGuid();
            
             await _prizeRepository.AddAsync(createPrize);
@@ -169,7 +166,7 @@ namespace Service.Services.PrizeService
                 return new ServiceResponse<bool>
                 {
                     Data = false,
-                    Message = "Inventory not found",
+                    Message = "Prize not found",
                     Success = false,
                     StatusCode = 404
                 };
@@ -179,7 +176,7 @@ namespace Service.Services.PrizeService
                 existingPrize.Quantity = updatePrizeDto.Quantity;
                 existingPrize.Description = updatePrizeDto.Description.Trim();
                 existingPrize.Name = updatePrizeDto.Name.Trim();
-                await _prizeRepository.UpdateAsync(id, existingPrize);
+                await _prizeRepository.UpdateAsync(existingPrize);
                 return new ServiceResponse<bool>
                 {
                     Data = true,

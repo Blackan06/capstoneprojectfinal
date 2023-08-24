@@ -77,7 +77,6 @@ namespace FPTHCMAdventuresAPI.Controllers
             }
         }
         [HttpPut("{id}")]
-
         public async Task<ActionResult<ServiceResponse<GetSchoolEventDto>>> UpdateSchoolEvent(Guid id, [FromBody] UpdateSchoolEventDto updateSchoolEventDto)
         {
             try
@@ -99,9 +98,31 @@ namespace FPTHCMAdventuresAPI.Controllers
                 return StatusCode(500, "Internal server error: " + ex.Message);
             }
         }
+        [HttpPut("{schooleventid}")]
+        public async Task<ActionResult<ServiceResponse<GetSchoolEventDto>>> UpdateSchoolEventStartTimeAndEndTime(Guid schooleventid, [FromBody] UpdateSchoolEventDto updateSchoolEventDto)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+                var res = await _schoolEventService.UpdateSchoolEventByStartTimeAndEndTime(schooleventid, updateSchoolEventDto);
+                if (!res.Success)
+                {
+                    return BadRequest(res);
+                }
+                return Ok(res);
+            }
+            catch (Exception ex)
+            {
+
+                return StatusCode(500, "Internal server error: " + ex.Message);
+            }
+        }
         [HttpGet("GetSchoolByEventId/{id}")]
 
-        public async Task<ActionResult<ServiceResponse<GetSchoolDto>>> GetSchoolByEventId(Guid id)
+        public async Task<ActionResult<ServiceResponse<GetSchoolByEventIdDto>>> GetSchoolByEventId(Guid id)
         {
             try
             {

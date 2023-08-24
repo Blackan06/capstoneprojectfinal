@@ -15,8 +15,8 @@ namespace Service.Services.SchoolEventService
         Task<ServiceResponse<SchoolEventDto>> GetSchoolEventById(Guid eventId);
         Task<ServiceResponse<Guid>> CreateNewSchoolEvent(CreateSchoolEventDto createSchoolEventDto);
         Task<ServiceResponse<bool>> UpdateSchoolEvent(Guid id, UpdateSchoolEventDto schoolEventDto);
-
-        Task<ServiceResponse<List<GetSchoolDto>>> GetSchoolByEventId(Guid eventid);
+        Task<ServiceResponse<bool>> UpdateSchoolEventByStartTimeAndEndTime(Guid id, UpdateSchoolEventDto schoolEventDto);
+        Task<ServiceResponse<List<GetSchoolByEventIdDto>>> GetSchoolByEventId(Guid eventid);
         Task<ServiceResponse<List<Guid>>> CreateNewSchoolEventList(CreateListSchoolEvent createEventTaskDtos);
 
     }

@@ -9,7 +9,7 @@ namespace DataAccess.Dtos.SchoolEventDto
         private Guid eventId;
         private Guid schoolId;
         private string status;
-        public string approvalstatus;
+        private string approvalStatus;
         private DateTime startTime;
         private DateTime endTime;
         private DateTime createdAt;
@@ -39,20 +39,17 @@ namespace DataAccess.Dtos.SchoolEventDto
             get { return endTime; }
             set { endTime = value; }
         }
-
-
-
-        [RegularExpression("^(ACTIVE|INACTIVE)$", ErrorMessage = "Status must be 'ACTIVE' or 'INACTIVE'.")]
+      [RegularExpression("^(ACTIVE|INACTIVE)$", ErrorMessage = "Status must be 'ACTIVE' or 'INACTIVE'.")]
         public string Status
         {
             get { return status; }
             set { status = value; }
         }
         [RegularExpression("^(ACCEPT|REFUSE)$", ErrorMessage = "Status must be 'ACCEPT' or 'REFUSE'.")]
-        public string Approvalstatus
+        public string ApprovalStatus
         {
-            get { return approvalstatus; }
-            set { approvalstatus = value; }
+            get { return approvalStatus; }
+            set { approvalStatus = value; }
         }
 
         [JsonIgnore]

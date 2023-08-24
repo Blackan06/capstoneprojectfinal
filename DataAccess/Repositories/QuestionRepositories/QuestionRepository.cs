@@ -36,7 +36,7 @@ namespace DataAccess.Repositories.QuestionRepositories
         public async Task<IEnumerable<ListQuestionAndAnswer>> GetQuestionAndAnswersAsync()
         {
             var questionAndAnswers = await _dbContext.Questions
-                .Include(q => q.Answers) // Load associated Answers
+                .Include(q => q.Answers).OrderByDescending(x => x.CreatedAt)
                 .Join(
                     _dbContext.Majors,
                     question => question.MajorId,
@@ -53,7 +53,7 @@ namespace DataAccess.Repositories.QuestionRepositories
                             Id = answer.Id,
                             AnswerName = answer.AnswerName,
                             IsRight = answer.IsRight
-                        }).ToList()
+                        }).OrderByDescending(x => x.CreatedAt).ToList()
                     }
                 )
                 .ToListAsync();

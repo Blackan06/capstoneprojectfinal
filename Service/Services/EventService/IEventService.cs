@@ -16,7 +16,7 @@ namespace Service.Services.EventService
         Task<ServiceResponse<EventDto>> GetEventById(Guid eventId);
         Task<ServiceResponse<Guid>> CreateNewEvent(CreateEventDto createEventDto);
         Task<ServiceResponse<bool>> UpdateEvent(Guid id,UpdateEventDto eventDto);
-        Task<ServiceResponse<IEnumerable<GetTaskAndEventDto>>> GetTaskAndEventListByTimeNow(Guid schoolId);
+        Task<ServiceResponse<GetTaskAndEventDto>> GetTaskAndEventListByTimeNow(Guid schoolId);
         Task<ServiceResponse<byte[]>> DownloadExcelTemplate();
         Task<ServiceResponse<string>> ImportDataFromExcel(IFormFile file);
         Task<ServiceResponse<PagedResult<EventDto>>> GetEventWithPage(QueryParameters queryParameters);

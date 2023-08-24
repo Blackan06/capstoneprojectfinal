@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 using BusinessObjects.Model;
+using DataAccess.Enum;
 
 namespace DataAccess.Dtos.EventTaskDto
 {
@@ -13,6 +14,7 @@ namespace DataAccess.Dtos.EventTaskDto
         private TimeSpan endTime;
         private int priority;
         private double point;
+        private string status;
         private DateTime createdAt;
 
         [Required]
@@ -55,6 +57,13 @@ namespace DataAccess.Dtos.EventTaskDto
         {
             get { return point; }
             set { point = value; }
+        }
+        [RegularExpression("^(ACTIVE|INACTIVE)$", ErrorMessage = "Status must be 'ACTIVE' or 'INACTIVE'.")]
+
+        public string Status
+        {
+            get { return status; }
+            set { status = value; }
         }
         [JsonIgnore]
         public DateTime CreatedAt

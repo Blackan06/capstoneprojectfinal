@@ -1,12 +1,11 @@
 ﻿using AutoMapper;
 using BusinessObjects.Model;
-using DataAccess.Dtos.SchoolDto;
+using DataAccess.Dtos.SchoolEventDto;
 using DataAccess.GenericRepositories;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace DataAccess.Repositories.SchoolEventRepositories
@@ -22,16 +21,23 @@ namespace DataAccess.Repositories.SchoolEventRepositories
             _mapper = mapper;
         }
 
-        public async Task<List<GetSchoolDto>> GetSchoolByEventId(Guid eventid)
+        public async Task<List<GetSchoolByEventIdDto>> GetSchoolByEventId(Guid eventid)
         {
-            var schoolList = await _dbContext.SchoolEvents.Include(se => se.School).Where(se => se.EventId.Equals(eventid)).Select(s => new GetSchoolDto
+            var schoolList = await _dbContext.SchoolEvents.Include(se => se.School).OrderByDescending(x => x.CreatedAt).Where(se => se.EventId.Equals(eventid)).Select(s => new GetSchoolByEventIdDto
             {
                 Id = s.School.Id,
-                Name = s.School.Name,
+                Status = s.Status,
+                ApprovalStatus = s.ApprovalStatus,
+                EndTime = s.EndTime,
+                SchoolId = s.SchoolId,
+                SchoolName = s.School.Name,
+                StartTime = s.StartTime,
+                EventName = s.Event.Name,
                 PhoneNumber = s.School.PhoneNumber.ToString(),
                 Email = s.School.Email,
-                Address = s.School.Address
+                CreatedAt = s.CreatedAt
             }).ToListAsync();
+
             return schoolList;
         }
 

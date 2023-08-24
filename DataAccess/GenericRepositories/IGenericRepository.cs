@@ -9,7 +9,6 @@ namespace DataAccess.GenericRepositories
 {
     public interface IGenericRepository<T> where T : class
     {
-
         Task<IEnumerable<T>> GetAll();
         Task<IEnumerable<T>> GetAllWithInclude(Expression<Func<T, object>> includes);
         Task<IEnumerable<T>> GetAllWithOrderByDescending(Expression<Func<T, int>> orderBy);

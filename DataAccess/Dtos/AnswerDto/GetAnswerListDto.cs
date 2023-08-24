@@ -11,5 +11,6 @@ namespace DataAccess.Dtos.AnswerDto
         public Guid Id { get; set; }
         public string AnswerName { get; set; }
         public bool IsRight { get; set; }
+        public DateTime CreatedAt { get; set; }
     }
 }

@@ -220,16 +220,17 @@ namespace DataAccess.Configuration
                             .ForMember(dest => dest.EventName, opt => opt.MapFrom(src => src.Event.Name));
             CreateMap<SchoolEvent, GetSchoolEventDto>().ReverseMap();
             CreateMap<SchoolEvent, CreateSchoolEventDto>().ReverseMap();
+            CreateMap<SchoolEvent, TimeSchoolEventDTO>().ReverseMap();
             CreateMap<SchoolEvent, UpdateSchoolEventDto>().ReverseMap();
             CreateMap<CreateListSchoolEvent, SchoolEvent>()
-                       .ForMember(dest => dest.Id, opt => opt.Ignore())
-                       .ForMember(dest => dest.CreatedAt, opt => opt.Ignore()) // Không ánh xạ CreatedAt từ DTO vì nó sẽ được tạo trong logic xử lý Entity
+                           .ForMember(dest => dest.Id, opt => opt.Ignore())
+                           .ForMember(dest => dest.CreatedAt, opt => opt.Ignore()) // Không ánh xạ CreatedAt từ DTO vì nó sẽ được tạo trong logic xử lý Entity
 
-                       .ForMember(dest => dest.StartTime, opt => opt.MapFrom(src => src.StartTime))
-                       .ForMember(dest => dest.EndTime, opt => opt.MapFrom(src => src.EndTime))
-                       .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
-                       .ForMember(dest => dest.Approvalstatus, opt => opt.MapFrom(src => src.Approvalstatus))
-                       .ForMember(dest => dest.SchoolId, opt => opt.MapFrom(src => src.SchoolIds.FirstOrDefault()));
+                           .ForMember(dest => dest.StartTime, opt => opt.MapFrom(src => src.StartTime))
+                           .ForMember(dest => dest.EndTime, opt => opt.MapFrom(src => src.EndTime))
+                           .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
+                           .ForMember(dest => dest.ApprovalStatus, opt => opt.MapFrom(src => src.ApprovalStatus))
+                           .ForMember(dest => dest.SchoolId, opt => opt.MapFrom(src => src.SchoolIds.FirstOrDefault()));
             #endregion
 
 

@@ -2,6 +2,7 @@
 using BusinessObjects.Model;
 using DataAccess.Configuration;
 using DataAccess.Dtos.PlayerDto;
+using DataAccess.Dtos.PlayerPrizeDto;
 using DataAccess.Dtos.SchoolEventDto;
 using DataAccess.Repositories.InventoryRepositories;
 using DataAccess.Repositories.PlayerRepositories;
@@ -25,10 +26,7 @@ namespace Service.Services.PlayerService
         private readonly ISchoolRepository _schoolRepository;
         private readonly IInventoryRepository _inventoryRepository;
         private readonly IMapper _mapper;
-        MapperConfiguration config = new MapperConfiguration(cfg =>
-        {
-            cfg.AddProfile(new MapperConfig());
-        });
+    
         public PlayerService(IPlayerRepository playerRepository, IMapper mapper, IStudentRepositories studentRepository, ISchoolRepository schoolRepository,IInventoryRepository inventoryRepository)
         {
             _playerRepository = playerRepository;
@@ -64,13 +62,12 @@ namespace Service.Services.PlayerService
             else
             {
                 createPlayerDto.Nickname = "null";
-                TimeZoneVietName(createPlayerDto.CreatedAt);
+                createPlayerDto.CreatedAt = TimeZoneVietName(createPlayerDto.CreatedAt);
                 createPlayerDto.TotalPoint = 0;
                 createPlayerDto.TotalTime = 0;
                 createPlayerDto.Passcode = Guid.NewGuid().ToString("N").Substring(0, 8);
                 createPlayerDto.IsPlayer = false;
-                var mapper = config.CreateMapper();
-                var _player = mapper.Map<Player>(createPlayerDto);
+                var _player = _mapper.Map<Player>(createPlayerDto);
                 _player.Id = Guid.NewGuid();
                 await _playerRepository.AddAsync(_player);
 
@@ -85,7 +82,7 @@ namespace Service.Services.PlayerService
             }
 
         }
-        private void TimeZoneVietName(DateTime dateTime)
+        private DateTime TimeZoneVietName(DateTime dateTime)
         {
             TimeZoneInfo vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
 
@@ -94,11 +91,11 @@ namespace Service.Services.PlayerService
 
             // Chuyển múi giờ từ UTC sang múi giờ Việt Nam
             dateTime = TimeZoneInfo.ConvertTimeFromUtc(utcNow, vietnamTimeZone);
+            return dateTime;
         }
         public async Task<ServiceResponse<List<Guid>>> CreateNewPlayers(CreateListPlayerDto listPlayerDto)
         {
             var addedPlayerIds = new List<Guid>();
-            var mapper = config.CreateMapper();
             var newPlayers = new List<Player>();
 
             foreach (var studentId in listPlayerDto.StudentId)
@@ -125,7 +122,7 @@ namespace Service.Services.PlayerService
                     TotalTime = 0,
                 };
 
-                TimeZoneVietName(listPlayerDto.CreatedAt);
+                listPlayerDto.CreatedAt = TimeZoneVietName(listPlayerDto.CreatedAt);
                 addedPlayerIds.Add(player.Id);
                 newPlayers.Add(player);
             }
@@ -153,7 +150,6 @@ namespace Service.Services.PlayerService
                     
                 };
                 var taskDetail = await _playerRepository.GetByWithCondition(x => x.Nickname.Equals(nickName), null, true);
-                var _mapper = config.CreateMapper();
                 var taskDetailDto = _mapper.Map<GetPlayerDto>(taskDetail);
                 if (taskDetail == null)
                 {
@@ -249,7 +245,6 @@ namespace Service.Services.PlayerService
                     x => x.ExchangeHistories,
                 };
                 var taskDetail = await _playerRepository.GetByWithCondition(x => x.StudentId == studentId, includes, true);
-                var _mapper = config.CreateMapper();
                 var taskDetailDto = _mapper.Map<GetPlayerDto>(taskDetail);
                 if (taskDetail == null)
                 {
@@ -327,7 +322,7 @@ namespace Service.Services.PlayerService
                 existingPlayer.TotalTime = updatePlayerDto.TotalTime;
                 existingPlayer.Isplayer = updatePlayerDto.IsPlayer;
 
-                await _playerRepository.UpdateAsync(id, existingPlayer);
+                await _playerRepository.UpdateAsync(existingPlayer);
 
                 return new ServiceResponse<bool>
                 {

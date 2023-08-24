@@ -1,5 +1,6 @@
 ﻿using BusinessObjects.Model;
 using DataAccess.Dtos.SchoolDto;
+using DataAccess.Dtos.SchoolEventDto;
 using DataAccess.GenericRepositories;
 using System;
 using System.Collections.Generic;
@@ -11,7 +12,7 @@ namespace DataAccess.Repositories.SchoolEventRepositories
 {
     public interface ISchoolEventRepository : IGenericRepository<SchoolEvent>
     {
-        Task<List<GetSchoolDto>> GetSchoolByEventId(Guid eventid);
+        Task<List<GetSchoolByEventIdDto>> GetSchoolByEventId(Guid eventid);
 
     }
 }

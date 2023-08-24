@@ -20,10 +20,7 @@ namespace Service.Services.ItemInventoryService
     {
         private readonly IItemInventoryRepositories _itemInventoryRepository;
         private readonly IMapper _mapper;
-        MapperConfiguration config = new MapperConfiguration(cfg =>
-        {
-            cfg.AddProfile(new MapperConfig());
-        });
+       
         public ItemInventoryService(IItemInventoryRepositories itemInventoryRepository, IMapper mapper)
         {
             _itemInventoryRepository = itemInventoryRepository;
@@ -31,10 +28,8 @@ namespace Service.Services.ItemInventoryService
         }
         public async Task<ServiceResponse<Guid>> CreateNewItemInventory(CreateItemInventoryDto createItemInventoryDto)
         {
-            var mapper = config.CreateMapper();
-            TimeZoneVietName(createItemInventoryDto.CreatedAt);
-
-            var itemInventoryCreate = mapper.Map<ItemInventory>(createItemInventoryDto);
+            createItemInventoryDto.CreatedAt = TimeZoneVietName(createItemInventoryDto.CreatedAt);
+            var itemInventoryCreate = _mapper.Map<ItemInventory>(createItemInventoryDto);
             itemInventoryCreate.Id = Guid.NewGuid();
             await _itemInventoryRepository.AddAsync(itemInventoryCreate);
 
@@ -162,7 +157,7 @@ namespace Service.Services.ItemInventoryService
                 throw new Exception(ex.Message);
             }
         }
-        private void TimeZoneVietName(DateTime dateTime)
+        private DateTime TimeZoneVietName(DateTime dateTime)
         {
             TimeZoneInfo vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
 
@@ -171,6 +166,7 @@ namespace Service.Services.ItemInventoryService
 
             // Chuyển múi giờ từ UTC sang múi giờ Việt Nam
             dateTime = TimeZoneInfo.ConvertTimeFromUtc(utcNow, vietnamTimeZone);
+            return dateTime;
         }
         public async Task<ServiceResponse<bool>> UpdateItemInventory(Guid id, UpdateItemInventoryDto ItemInventoryDto)
         {
@@ -189,7 +185,7 @@ namespace Service.Services.ItemInventoryService
             try
             {
                 existingItemInventory.Quantity = ItemInventoryDto.Quantity;
-                await _itemInventoryRepository.UpdateAsync(id, ItemInventoryDto);
+                await _itemInventoryRepository.UpdateAsync(existingItemInventory);
                 return new ServiceResponse<bool>
                 {
                     Data = true,

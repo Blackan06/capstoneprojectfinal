@@ -13,6 +13,6 @@ namespace DataAccess.Repositories.EventRepositories
     public interface IEventRepositories : IGenericRepository<Event>
     {
 
-        Task<IEnumerable<GetTaskAndEventDto>> GetTaskAndEventListByTimeNow(Guid schoolId);
+        Task<GetTaskAndEventDto> GetTaskAndEventListByTimeNow(Guid schoolId);
     }
 }

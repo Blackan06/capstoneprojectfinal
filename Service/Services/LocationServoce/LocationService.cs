@@ -28,10 +28,6 @@ namespace Service.Services.LocationServoce
     {
         private readonly ILocationRepository _locationRepository;
         private readonly IMapper _mapper;
-        MapperConfiguration config = new MapperConfiguration(cfg =>
-        {
-            cfg.AddProfile(new MapperConfig());
-        });
         public LocationService(ILocationRepository locationRepository, IMapper mapper)
         {
             _locationRepository = locationRepository;
@@ -48,13 +44,12 @@ namespace Service.Services.LocationServoce
                     StatusCode = 400
                 };
             }
-            
-            var mapper = config.CreateMapper();
-            TimeZoneVietName(createLocationDto.CreatedAt);
 
-            var createLocation = mapper.Map<Location>(createLocationDto);
+            createLocationDto.CreatedAt = TimeZoneVietName(createLocationDto.CreatedAt);
+            createLocationDto.LocationName = createLocationDto.LocationName.Trim();
+
+            var createLocation = _mapper.Map<Location>(createLocationDto);
             createLocation.Id = Guid.NewGuid();
-            createLocation.LocationName = createLocationDto.LocationName.Trim();
             await _locationRepository.AddAsync(createLocation);
 
             return new ServiceResponse<Guid>
@@ -65,7 +60,7 @@ namespace Service.Services.LocationServoce
                 StatusCode = 201
             };
         }
-        private void TimeZoneVietName(DateTime dateTime)
+        private DateTime TimeZoneVietName(DateTime dateTime)
         {
             TimeZoneInfo vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
 
@@ -74,6 +69,7 @@ namespace Service.Services.LocationServoce
 
             // Chuyển múi giờ từ UTC sang múi giờ Việt Nam
             dateTime = TimeZoneInfo.ConvertTimeFromUtc(utcNow, vietnamTimeZone);
+            return dateTime;
         }
         public async Task<ServiceResponse<LocationDto>> GetLocationById(Guid eventId)
         {
@@ -160,8 +156,8 @@ namespace Service.Services.LocationServoce
             }
             try
             {
-                existingLocation.LocationName = existingLocation.LocationName.Trim();
-                await _locationRepository.UpdateAsync(id, existingLocation);
+                existingLocation.Status = updateLocationDto.Status.Trim();
+                await _locationRepository.UpdateAsync(existingLocation);
                 return new ServiceResponse<bool>
                 {
                     Data = true,
@@ -238,7 +234,7 @@ namespace Service.Services.LocationServoce
                         {
                             var rowCount = worksheet.Dimension.Rows;
                             var dataList = new List<LocationDto>();
-                            
+                            var errorMessages = new List<string>();
                             for (int row = 2; row <= rowCount-1; row++)
                             {
                                 var data = new LocationDto
@@ -250,13 +246,17 @@ namespace Service.Services.LocationServoce
                                     LocationName = worksheet.Cells[row, 4].Value.ToString().Trim(),
                                     Status = worksheet.Cells[row, 5].Value.ToString().Trim()
                                 };
+                                data.CreatedAt = TimeZoneVietName(data.CreatedAt);
 
+                                if (string.IsNullOrEmpty(data.LocationName))
+                                {
+                                    errorMessages.Add($"Row {row}: Fullname is required.");
+                                }
                                 dataList.Add(data);
                             }
                             
                             // Start from row 2 to skip the header row
                             
-                            var mapper = config.CreateMapper();
                             var locations = _mapper.Map<List<Location>>(dataList);
                             await _locationRepository.AddRangeAsync(locations);
                             await _locationRepository.SaveChangesAsync();

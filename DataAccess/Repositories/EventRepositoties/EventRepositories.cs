@@ -26,43 +26,45 @@ namespace DataAccess.Repositories.EventRepositories
             _mapper = mapper;
         }
 
-        public async Task<IEnumerable<GetTaskAndEventDto>> GetTaskAndEventListByTimeNow(Guid schoolId)
+        public async Task<GetTaskAndEventDto> GetTaskAndEventListByTimeNow(Guid schoolId)
         {
             DateTime utcNow = DateTime.UtcNow;
             DateTime vietnamTime = ConvertToVietnamTime(utcNow);
             var status = "ACTIVE";
+            var schoolEvent = await _dbContext.SchoolEvents
+                    .Include(se => se.Event)
+                        .ThenInclude(e => e.EventTasks)
+                            .ThenInclude(et => et.Task)
+                                .ThenInclude(t => t.Location)
+                    .Include(se => se.Event)
+                        .ThenInclude(e => e.EventTasks)
+                            .ThenInclude(et => et.Task)
+                                .ThenInclude(t => t.Major)
+                    .Include(se => se.Event)
+                        .ThenInclude(e => e.EventTasks)
+                            .ThenInclude(et => et.Task)
+                                .ThenInclude(t => t.Npc)
+                    .Include(se => se.Event)
+                        .ThenInclude(e => e.EventTasks)
+                            .ThenInclude(et => et.Task)
+                                .ThenInclude(t => t.Item)
+                    .Where(se => se.SchoolId == schoolId && se.StartTime <= vietnamTime && se.EndTime > vietnamTime && se.Status == status)
+                    .FirstOrDefaultAsync();
 
-            var query = _dbContext.SchoolEvents
-                .Include(se => se.Event)
-                    .ThenInclude(e => e.EventTasks)
-                        .ThenInclude(et => et.Task)
-                            .ThenInclude(t => t.Location)
-                .Include(se => se.Event)
-                    .ThenInclude(e => e.EventTasks)
-                        .ThenInclude(et => et.Task)
-                            .ThenInclude(t => t.Major)
-                .Include(se => se.Event)
-                    .ThenInclude(e => e.EventTasks)
-                        .ThenInclude(et => et.Task)
-                            .ThenInclude(t => t.Npc)
-                .Include(se => se.Event)
-                    .ThenInclude(e => e.EventTasks)
-                        .ThenInclude(et => et.Task)
-                            .ThenInclude(t => t.Item)
-                .Where(se => se.SchoolId == schoolId && se.StartTime <= vietnamTime && se.EndTime > vietnamTime && se.Status == status);
-
-            var getTaskAndEventDtos = await query
-                .Select(se => new GetTaskAndEventDto
-                {
-                    EventName = se.Event.Name,
-                    TaskDtos = se.Event.EventTasks
+            if (schoolEvent == null)
+            {
+                return null; 
+            }
+            var getTaskAndEventDto = new GetTaskAndEventDto
+            {
+                EventName = schoolEvent.Event.Name,
+                TaskDtos = schoolEvent.Event.EventTasks
                         .Where(et => et.Task.Status == status)
                         .Select(et => new GetTaskRequestDto
                         {
                             Id = et.Task.Id,
                             EventtaskId = et.Id,
                             Name = et.Task.Name,
-                            ItemName = et.Task.Item.Name,
                             LocationName = et.Task.Location.LocationName,
                             MajorName = et.Task.Major.Name,
                             MajorId = et.Task.MajorId,
@@ -72,19 +74,18 @@ namespace DataAccess.Repositories.EventRepositories
                             Type = et.Task.Type,
                             Starttime = et.StartTime,
                             Endtime = et.EndTime,
+                            Priority = et.Priority
                         })
-                        .ToList(),
-                    StartTime = se.StartTime,
-                    EndTime = se.EndTime
-                })
-                .ToListAsync();
+                        .ToList().OrderBy(x => x.Priority),
+                StartTime = schoolEvent.StartTime,
+                EndTime = schoolEvent.EndTime
+            };
 
-            if (getTaskAndEventDtos.Count == 0 || getTaskAndEventDtos.Any(dto => dto.EventName == null) || getTaskAndEventDtos.Any(dto => dto.TaskDtos.Count() == 0))
+            if (getTaskAndEventDto.EventName == null || getTaskAndEventDto.TaskDtos.Count() == 0)
             {
-                return Enumerable.Empty<GetTaskAndEventDto>();
+                return null;
             }
-
-            return getTaskAndEventDtos;
+            return getTaskAndEventDto;
         }
 
 

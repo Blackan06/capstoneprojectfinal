@@ -21,10 +21,7 @@ namespace Service.Services.SchoolService
     {
         private readonly ISchoolRepository _schoolRepository;
         private readonly IMapper _mapper;
-        MapperConfiguration config = new MapperConfiguration(cfg =>
-        {
-            cfg.AddProfile(new MapperConfig());
-        });
+      
         public SchoolService(ISchoolRepository schoolRepository, IMapper mapper)
         {
             _schoolRepository = schoolRepository;
@@ -54,11 +51,10 @@ namespace Service.Services.SchoolService
             createSchoolDto.Address = createSchoolDto.Address.Trim();
             createSchoolDto.Name = createSchoolDto.Name.Trim();
             createSchoolDto.Email = createSchoolDto.Email.Trim();
-            TimeZoneVietName(createSchoolDto.CreatedAt);
+            createSchoolDto.CreatedAt = TimeZoneVietName(createSchoolDto.CreatedAt);
 
             // Tiếp tục tiến hành tạo mới dữ liệu
-            var mapper = config.CreateMapper();
-            var eventTaskcreate = mapper.Map<School>(createSchoolDto);
+            var eventTaskcreate = _mapper.Map<School>(createSchoolDto);
             eventTaskcreate.Id = Guid.NewGuid();
             await _schoolRepository.AddAsync(eventTaskcreate);
 
@@ -70,7 +66,7 @@ namespace Service.Services.SchoolService
                 StatusCode = 201
             };
         }
-        private void TimeZoneVietName(DateTime dateTime)
+        private DateTime TimeZoneVietName(DateTime dateTime)
         {
             TimeZoneInfo vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
 
@@ -79,6 +75,7 @@ namespace Service.Services.SchoolService
 
             // Chuyển múi giờ từ UTC sang múi giờ Việt Nam
             dateTime = TimeZoneInfo.ConvertTimeFromUtc(utcNow, vietnamTimeZone);
+            return dateTime;
         }
 
         public async Task<ServiceResponse<IEnumerable<GetSchoolDto>>> GetSchool()
@@ -178,14 +175,26 @@ namespace Service.Services.SchoolService
                     StatusCode = 400
                 };
             }
+            var existingSchool = await _schoolRepository.GetById(id);
 
+            if (existingSchool == null)
+            {
+                return new ServiceResponse<bool>
+                {
+                    Data = false,
+                    Message = "School not found",
+                    Success = false,
+                    StatusCode = 404
+                };
+            }
             try
             {
-                schoolDto.Address = schoolDto.Address.Trim();
-                schoolDto.Name = schoolDto.Name.Trim();
-                schoolDto.Email = schoolDto.Email.Trim();
-                schoolDto.Status = schoolDto.Status.Trim();
-                await _schoolRepository.UpdateAsync(id, schoolDto);
+
+                existingSchool.Address = schoolDto.Address.Trim();
+                existingSchool.Name = schoolDto.Name.Trim();
+                existingSchool.Email = schoolDto.Email.Trim();
+                existingSchool.Status = schoolDto.Status.Trim();
+                await _schoolRepository.UpdateAsync(existingSchool);
                 return new ServiceResponse<bool>
                 {
                     Data = true,

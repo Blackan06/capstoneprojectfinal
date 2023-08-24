@@ -230,7 +230,7 @@ namespace DataAccess.GenericRepositories
 
         public async Task UpdateAsync(T entity)
         {
-            _dbContext.Update(entity);
+            _dbContext.Entry(entity).State = EntityState.Modified;
             await _dbContext.SaveChangesAsync();
         }
 

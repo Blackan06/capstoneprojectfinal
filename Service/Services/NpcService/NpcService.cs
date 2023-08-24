@@ -20,10 +20,7 @@ namespace Service.Services.NpcService
     {
         private readonly INpcRepository _npcRepository;
         private readonly IMapper _mapper;
-        MapperConfiguration config = new MapperConfiguration(cfg =>
-        {
-            cfg.AddProfile(new MapperConfig());
-        });
+       
         public NpcService(INpcRepository npcRepository, IMapper mapper)
         {
             _npcRepository = npcRepository;
@@ -43,7 +40,7 @@ namespace Service.Services.NpcService
             createNpcDto.Introduce = createNpcDto.Introduce.Trim();
             createNpcDto.Name = createNpcDto.Name.Trim();
             createNpcDto.Status = createNpcDto.Status.Trim();
-            TimeZoneVietName(createNpcDto.CreatedAt);
+            createNpcDto.CreatedAt = TimeZoneVietName(createNpcDto.CreatedAt);
 
             var createNpc = _mapper.Map<Npc>(createNpcDto);
             createNpc.Id = Guid.NewGuid();
@@ -58,7 +55,7 @@ namespace Service.Services.NpcService
                 StatusCode = 201
             };
         }
-        private void TimeZoneVietName(DateTime dateTime)
+        private DateTime TimeZoneVietName(DateTime dateTime)
         {
             TimeZoneInfo vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
 
@@ -67,6 +64,7 @@ namespace Service.Services.NpcService
 
             // Chuyển múi giờ từ UTC sang múi giờ Việt Nam
             dateTime = TimeZoneInfo.ConvertTimeFromUtc(utcNow, vietnamTimeZone);
+            return dateTime;
         }
         public async Task<ServiceResponse<NpcDto>> GetNpcById(Guid eventId)
         {
@@ -156,7 +154,7 @@ namespace Service.Services.NpcService
                 existingNpc.Introduce = updateNpcDto.Introduce.Trim();
                 existingNpc.Name = updateNpcDto.Name.Trim();
                 existingNpc.Status = updateNpcDto.Status.Trim();
-                await _npcRepository.UpdateAsync(id, existingNpc);
+                await _npcRepository.UpdateAsync(existingNpc);
                 return new ServiceResponse<bool>
                 {
                     Data = true,

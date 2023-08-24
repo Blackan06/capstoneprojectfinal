@@ -14,7 +14,7 @@ namespace BusinessObjects.Model
         public DateTime CreatedAt { get; set; }
         public DateTime EndTime { get; set; }
         public DateTime StartTime { get; set; }
-        public string Approvalstatus { get; set; }
+        public string ApprovalStatus { get; set; }
 
         public virtual Event Event { get; set; }
         public virtual School School { get; set; }

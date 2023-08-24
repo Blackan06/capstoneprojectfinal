@@ -67,25 +67,32 @@ namespace DataAccess.Repositories.PlayerRepositories
 
         public async Task<IEnumerable<PlayerDto>> GetRankedPlayer(Guid eventid, Guid schoolId)
         {
-            var ranked = await _dbContext.Players.Include(s => s.Student.School).Where(p => p.EventId.Equals(eventid) && p.Student.SchoolId.Equals(schoolId) &&
-                (p.Nickname != null || p.TotalPoint != 0 || p.TotalTime != 0)).
-                OrderByDescending(x => x.TotalPoint).ThenBy(x => x.TotalTime).Select(x => new PlayerDto
-                {
-                    Id = x.Id,
-                    EventId = x.EventId,
-                    EventName = x.Event.Name,
-                    StudentName = x.Student.Fullname,
-                    Passcode = x.Passcode,
-                    StudentId = x.StudentId,
-                    Nickname = x.Nickname,
-                    CreatedAt = x.CreatedAt,
-                    TotalPoint = x.TotalPoint,
-                    TotalTime = x.TotalTime,
-                    Isplayer = x.Isplayer
-                }).ToListAsync();
+           var rankedPlayers = await _dbContext.PlayerHistories
+                                .Include(ph => ph.Player) // Đảm bảo tải thông tin của người chơi (Player)
+                                .Where(ph => ph.Eventtask.EventId == eventid && ph.Player.Student.SchoolId == schoolId)
+                                .GroupBy(ph => ph.PlayerId)
+                                .Select(group => new PlayerDto
+                                {
+                                    Id = group.Key,
+                                    EventId = eventid,
+                                    EventName = group.First().Eventtask.Event.Name,
+                                    StudentName = group.First().Player.Student.Fullname,
+                                    Passcode = group.First().Player.Passcode,
+                                    StudentId = group.First().Player.StudentId,
+                                    Nickname = group.First().Player.Nickname,
+                                    CreatedAt = group.First().Player.CreatedAt,
+                                    TotalPoint = group.Sum(ph => ph.TaskPoint ?? 0) , 
+                                    TotalTime = group.Sum(ph => ph.CompletedTime ?? 0),   
+                                    Isplayer = group.First().Player.Isplayer
+                                })
+                                .OrderByDescending(p => p.TotalPoint)
+                                .ThenBy(p => p.TotalTime)
+                                .ToListAsync();
 
-            return ranked;
+            return rankedPlayers;
+
         }
+
 
         public async Task<Guid> GetSchoolByPlayerId(Guid playerId)
         {

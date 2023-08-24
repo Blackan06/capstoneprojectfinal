@@ -105,6 +105,8 @@ namespace FPTHCMAdventuresAPI
                           .AllowAnyOrigin()
                           .AllowAnyMethod());
             });
+            services.AddHostedService<StatusUpdateService>();
+
             services.AddSingleton<StatusUpdateScheduler>(
             serviceProvider => new StatusUpdateScheduler(
                      serviceProvider.GetRequiredService<IServiceScopeFactory>(),

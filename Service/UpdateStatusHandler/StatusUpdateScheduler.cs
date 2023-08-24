@@ -31,9 +31,9 @@ namespace Service.UpdateStatusHandler
                     var dbContext = scope.ServiceProvider.GetRequiredService<db_a9c31b_capstoneContext>();
 
                     var currentTime = DateTime.UtcNow;
-                    TimeZoneVietName(currentTime);
+                   
                     var activeEventSchools = await dbContext.SchoolEvents
-                                                    .Where(a => a.EndTime <= currentTime && a.Status != "INACTIVE")
+                                                    .Where(a => a.EndTime <= TimeZoneVietName(currentTime) && a.Status != "INACTIVE")
                                                     .ToListAsync();
 
 
@@ -49,7 +49,7 @@ namespace Service.UpdateStatusHandler
                 await Task.Delay(_updateInterval, stoppingToken); // Khoảng thời gian cập nhật
             }
         }
-        private void TimeZoneVietName(DateTime dateTime)
+        private DateTime TimeZoneVietName(DateTime dateTime)
         {
             TimeZoneInfo vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
 
@@ -58,6 +58,8 @@ namespace Service.UpdateStatusHandler
 
             // Chuyển múi giờ từ UTC sang múi giờ Việt Nam
             dateTime = TimeZoneInfo.ConvertTimeFromUtc(utcNow, vietnamTimeZone);
+
+            return dateTime;
         }
     }
 }

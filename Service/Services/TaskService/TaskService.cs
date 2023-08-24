@@ -3,6 +3,7 @@ using BusinessObjects.Model;
 using DataAccess.Configuration;
 using DataAccess.Dtos.EventDto;
 using DataAccess.Dtos.SchoolDto;
+using DataAccess.Dtos.StudentDto;
 using DataAccess.Dtos.TaskDto;
 using DataAccess.Repositories.EventRepositories;
 using DataAccess.Repositories.EventTaskRepositories;
@@ -27,12 +28,8 @@ namespace Service.Services.TaskService
         private readonly IEventTaskRepository _eventTaskRepository;
         private readonly IMajorRepository _majorRepository;
         private readonly IQuestionRepository _questionRepository;
-
         private readonly IMapper _mapper;
-        MapperConfiguration config = new MapperConfiguration(cfg =>
-        {
-            cfg.AddProfile(new MapperConfig());
-        });
+       
         public TaskService(ITaskRepositories taskRepository, IMapper mapper,IEventTaskRepository eventTaskRepository , IEventRepositories eventRepositories, IMajorRepository majorRepository, IQuestionRepository questionRepository)
         {
             _taskRepository = taskRepository;
@@ -65,10 +62,8 @@ namespace Service.Services.TaskService
             createTaskDto.Name = createTaskDto.Name.Trim();
             createTaskDto.Type = createTaskDto.Type.Trim();
             createTaskDto.Status = createTaskDto.Status.Trim();
-            TimeZoneVietName(createTaskDto.CreatedAt);
-
-            var mapper = config.CreateMapper();
-            var taskcreate = mapper.Map<Task>(createTaskDto);
+            createTaskDto.CreatedAt = TimeZoneVietName(createTaskDto.CreatedAt);
+             var taskcreate = _mapper.Map<Task>(createTaskDto);
             taskcreate.Id = Guid.NewGuid();
             if (taskcreate.Type == "questionandanswer")
             {
@@ -148,7 +143,6 @@ namespace Service.Services.TaskService
                     x => x.EventTasks,
                 };
                 var taskDetail = await _taskRepository.GetByWithCondition(x => x.Id == eventId, includes, true);
-                var _mapper = config.CreateMapper();
                 var taskDetailDto = _mapper.Map<GetTaskDto>(taskDetail);
              
                 if (taskDetail == null)
@@ -227,12 +221,25 @@ namespace Service.Services.TaskService
                     };
                 }
             }
+
+            var existingTask = await _taskRepository.GetById(id);
+
+            if (existingTask == null)
+            {
+                return new ServiceResponse<bool>
+                {
+                    Data = false,
+                    Message = "Task not found",
+                    Success = false,
+                    StatusCode = 404
+                };
+            }
             try
             {
-                updateTaskDto.Name = updateTaskDto.Name.Trim();
-                updateTaskDto.Type = updateTaskDto.Type.Trim();
-                updateTaskDto.Status = updateTaskDto.Status.Trim();
-                await _taskRepository.UpdateAsync(id, updateTaskDto);
+                existingTask.Name = updateTaskDto.Name.Trim();
+                existingTask.Type = updateTaskDto.Type.Trim();
+                existingTask.Status = updateTaskDto.Status.Trim();
+                await _taskRepository.UpdateAsync(existingTask);
                 return new ServiceResponse<bool>
                 {
                     Data = true,
@@ -292,7 +299,7 @@ namespace Service.Services.TaskService
             }
         }
 
-        private void TimeZoneVietName(DateTime dateTime)
+        private DateTime TimeZoneVietName(DateTime dateTime)
         {
             TimeZoneInfo vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
 
@@ -301,6 +308,7 @@ namespace Service.Services.TaskService
 
             // Chuyển múi giờ từ UTC sang múi giờ Việt Nam
             dateTime = TimeZoneInfo.ConvertTimeFromUtc(utcNow, vietnamTimeZone);
+            return dateTime;
         }
     }
 }

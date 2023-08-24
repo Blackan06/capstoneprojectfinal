@@ -12,7 +12,7 @@ namespace DataAccess.Dtos.SchoolEventDto
         public Guid EventId { get; set; }
         public List<Guid> SchoolIds { get; set; }
         public string Status { get; set; }
-        public string Approvalstatus { get; set; }
+        public string ApprovalStatus { get; set; }
         public DateTime StartTime { get; set; }
         public DateTime EndTime { get; set; }
         [JsonIgnore]

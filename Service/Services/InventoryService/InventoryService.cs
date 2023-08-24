@@ -17,10 +17,7 @@ namespace Service.Services.InventoryService
     {
         private readonly IInventoryRepository _inventoryRepository;
         private readonly IMapper _mapper;
-        MapperConfiguration config = new MapperConfiguration(cfg =>
-        {
-            cfg.AddProfile(new MapperConfig());
-        });
+   
         public InventoryService(IInventoryRepository inventoryRepository, IMapper mapper)
         {
             _inventoryRepository = inventoryRepository;
@@ -37,10 +34,9 @@ namespace Service.Services.InventoryService
                     StatusCode = 400
                 };
             }
-            var mapper = config.CreateMapper();
-            TimeZoneVietName(createInventoryDto.CreatedAt);
+            createInventoryDto.CreatedAt = TimeZoneVietName(createInventoryDto.CreatedAt);
 
-            var inventoryCreate = mapper.Map<Inventory>(createInventoryDto);
+            var inventoryCreate = _mapper.Map<Inventory>(createInventoryDto);
             inventoryCreate.Id = Guid.NewGuid();
             await _inventoryRepository.AddAsync(inventoryCreate);
 
@@ -52,7 +48,7 @@ namespace Service.Services.InventoryService
                 StatusCode = 201
             };
         }
-        private void TimeZoneVietName(DateTime dateTime)
+        private DateTime TimeZoneVietName(DateTime dateTime)
         {
             TimeZoneInfo vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
 
@@ -61,6 +57,7 @@ namespace Service.Services.InventoryService
 
             // Chuyển múi giờ từ UTC sang múi giờ Việt Nam
             dateTime = TimeZoneInfo.ConvertTimeFromUtc(utcNow, vietnamTimeZone);
+            return dateTime;
         }
         public async Task<ServiceResponse<IEnumerable<GetInventoryDto>>> GetInventory()
         {
@@ -147,7 +144,7 @@ namespace Service.Services.InventoryService
             }
             try
             {
-                await _inventoryRepository.UpdateAsync(id, updateInventoryDto);
+                await _inventoryRepository.UpdateAsync(existingInventory);
                 return new ServiceResponse<bool>
                 {
                     Data = true,

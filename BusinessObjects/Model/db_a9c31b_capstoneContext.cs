@@ -649,11 +649,11 @@ namespace BusinessObjects.Model
                     .ValueGeneratedNever()
                     .HasColumnName("id");
 
-                entity.Property(e => e.Approvalstatus)
+                entity.Property(e => e.ApprovalStatus)
                     .IsRequired()
                     .HasMaxLength(100)
                     .IsUnicode(false)
-                    .HasColumnName("approvalstatus");
+                    .HasColumnName("approval_status");
 
                 entity.Property(e => e.CreatedAt)
                     .HasColumnType("datetime")

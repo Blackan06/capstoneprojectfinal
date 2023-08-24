@@ -21,10 +21,7 @@ namespace Service.Services.ItemService
         private readonly IItemRepository _itemRepository;
         private readonly IImageRepository _imageRepository;
         private readonly IMapper _mapper;
-        MapperConfiguration config = new MapperConfiguration(cfg =>
-        {
-            cfg.AddProfile(new MapperConfig());
-        });
+      
         public ItemService(IItemRepository itemRepository, IMapper mapper, IImageRepository imageRepository)
         {
             _itemRepository = itemRepository;
@@ -51,15 +48,14 @@ namespace Service.Services.ItemService
                     StatusCode = 400
                 };
             }
-            var mapper = config.CreateMapper();
-            TimeZoneVietName(createItemDto.CreatedAt);
-
-            var itemCreate = mapper.Map<Item>(createItemDto);
+            createItemDto.CreatedAt = TimeZoneVietName(createItemDto.CreatedAt);
+            createItemDto.Name = createItemDto.Name.Trim();
+            createItemDto.Description = createItemDto.Description.Trim();
+            createItemDto.Type = createItemDto.Type.Trim();
+            createItemDto.Status = createItemDto.Status.Trim();
+            var itemCreate = _mapper.Map<Item>(createItemDto);
             itemCreate.Id = Guid.NewGuid();
-            itemCreate.Name = createItemDto.Name.Trim();
-            itemCreate.Description = createItemDto.Description.Trim();
-            itemCreate.Type = createItemDto.Type.Trim();
-            itemCreate.Status = createItemDto.Status.Trim();
+          
            
 
             // Tải lên hình ảnh và lưu URL
@@ -77,7 +73,7 @@ namespace Service.Services.ItemService
                 StatusCode = 201
             };
         }
-        private void TimeZoneVietName(DateTime dateTime)
+        private DateTime TimeZoneVietName(DateTime dateTime)
         {
             TimeZoneInfo vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
 
@@ -86,6 +82,7 @@ namespace Service.Services.ItemService
 
             // Chuyển múi giờ từ UTC sang múi giờ Việt Nam
             dateTime = TimeZoneInfo.ConvertTimeFromUtc(utcNow, vietnamTimeZone);
+            return dateTime;
         }
         public async Task<ServiceResponse<string>> DisableStausItem(Guid id)
         {
@@ -198,13 +195,12 @@ namespace Service.Services.ItemService
                 };
             }
             var existingItem = await _itemRepository.GetById(id);
-
             if (existingItem == null)
             {
                 return new ServiceResponse<bool>
                 {
                     Data = false,
-                    Message = "Inventory not found",
+                    Message = "Item not found",
                     Success = false,
                     StatusCode = 404
                 };
@@ -215,7 +211,7 @@ namespace Service.Services.ItemService
                 existingItem.Description = updateItemDto.Description.Trim();
                 existingItem.Type = updateItemDto.Type.Trim();
                 existingItem.Status = updateItemDto.Status.Trim();
-                await _itemRepository.UpdateAsync(id, existingItem);
+                await _itemRepository.UpdateAsync(existingItem);
                 return new ServiceResponse<bool>
                 {
                     Data = true,

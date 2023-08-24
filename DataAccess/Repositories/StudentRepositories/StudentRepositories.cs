@@ -74,7 +74,7 @@ namespace DataAccess.Repositories.StudentRepositories
                         GraduateYear = x.GraduateYear,
                         Classname = x.Classname,
                         Status = x.Status
-                    }).ToList();
+                    }).ToList().OrderByDescending(x => x.CreatedAt);
 
                     // You may need to add additional logic here to filter students based on the eventId.
 

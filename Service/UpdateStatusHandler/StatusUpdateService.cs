@@ -20,9 +20,9 @@ namespace Service.UpdateStatusHandler
         }
 
          protected override Task ExecuteAsync(CancellationToken stoppingToken)
-        {
+         {
             return _statusUpdateScheduler.StartAsync(stoppingToken);
-        }
+         }
 
     }
 }

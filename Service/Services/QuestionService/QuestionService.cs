@@ -28,10 +28,7 @@ namespace Service.Services.QuestionService
         private readonly IAnswerRepository _answerRepository;
         private readonly IMajorRepository _majorRepository;
         private readonly IMapper _mapper;
-        MapperConfiguration config = new MapperConfiguration(cfg =>
-        {
-            cfg.AddProfile(new MapperConfig());
-        });
+     
         public QuestionService(IQuestionRepository questionRepository, IMapper mapper, IMajorRepository majorRepository, IAnswerRepository answerRepository)
         {
             _questionRepository = questionRepository;
@@ -54,8 +51,8 @@ namespace Service.Services.QuestionService
 
             createQuestionDto.Name = createQuestionDto.Name.Trim();
             createQuestionDto.Status = createQuestionDto.Status.Trim();
-            var mapper = config.CreateMapper();
-            var createQuestion = mapper.Map<Question>(createQuestionDto);
+            createQuestionDto.CreatedAt = TimeZoneVietName(createQuestionDto.CreatedAt);
+            var createQuestion = _mapper.Map<Question>(createQuestionDto);
             createQuestion.Id = Guid.NewGuid();
             await _questionRepository.AddAsync(createQuestion);
 
@@ -154,7 +151,7 @@ namespace Service.Services.QuestionService
             };
         }
 
-        private void TimeZoneVietName(DateTime dateTime)
+        private DateTime TimeZoneVietName(DateTime dateTime)
         {
             TimeZoneInfo vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
 
@@ -163,6 +160,7 @@ namespace Service.Services.QuestionService
 
             // Chuyển múi giờ từ UTC sang múi giờ Việt Nam
             dateTime = TimeZoneInfo.ConvertTimeFromUtc(utcNow, vietnamTimeZone);
+            return dateTime;
         }
 
         public async Task<ServiceResponse<IEnumerable<QuestionDto>>> GetQuestion()
@@ -332,7 +330,6 @@ namespace Service.Services.QuestionService
 
                             // Start from row 2 to skip the header row
 
-                            var mapper = config.CreateMapper();
                             var locations = _mapper.Map<List<Question>>(dataList);
                             await _questionRepository.AddRangeAsync(locations);
                             await _questionRepository.SaveChangesAsync();

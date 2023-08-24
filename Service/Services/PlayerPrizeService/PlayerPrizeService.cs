@@ -19,16 +19,13 @@ namespace Service.Services.PlayerPrizeService
     {
         private readonly IPlayerPrizeRepositories _playerPrizeRepository;
         private readonly IMapper _mapper;
-        MapperConfiguration config = new MapperConfiguration(cfg =>
-        {
-            cfg.AddProfile(new MapperConfig());
-        });
+      
         public PlayerPrizeService(IPlayerPrizeRepositories playerPrizeRepository, IMapper mapper)
         {
             _playerPrizeRepository = playerPrizeRepository;
             _mapper = mapper;
         }
-        private void TimeZoneVietName(DateTime dateTime)
+        private DateTime TimeZoneVietName(DateTime dateTime)
         {
             TimeZoneInfo vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
 
@@ -37,6 +34,7 @@ namespace Service.Services.PlayerPrizeService
 
             // Chuyển múi giờ từ UTC sang múi giờ Việt Nam
             dateTime = TimeZoneInfo.ConvertTimeFromUtc(utcNow, vietnamTimeZone);
+            return dateTime;
         }
         public async Task<ServiceResponse<Guid>> CreateNewPlayerPrize(CreatePlayerPrizeDto createPlayerPrizeDto)
         {
@@ -49,10 +47,9 @@ namespace Service.Services.PlayerPrizeService
                     StatusCode = 400
                 };
             }
-            TimeZoneVietName(createPlayerPrizeDto.CreatedAt);
+            createPlayerPrizeDto.CreatedAt = TimeZoneVietName(createPlayerPrizeDto.CreatedAt);
 
-            var mapper = config.CreateMapper();
-            var createPlayerPrize = mapper.Map<PlayerPrize>(createPlayerPrizeDto);
+            var createPlayerPrize = _mapper.Map<PlayerPrize>(createPlayerPrizeDto);
             createPlayerPrize.Id = Guid.NewGuid();
             await _playerPrizeRepository.AddAsync(createPlayerPrize);
 
@@ -143,7 +140,7 @@ namespace Service.Services.PlayerPrizeService
             {
                 existingPlayerPrize.PrizeId = playerPrizeDto.PrizeId;
                 existingPlayerPrize.PlayerId = playerPrizeDto.PlayerId;
-                await _playerPrizeRepository.UpdateAsync(id, existingPlayerPrize);
+                await _playerPrizeRepository.UpdateAsync(existingPlayerPrize);
                 return new ServiceResponse<bool>
                 {   
                     Data = true,

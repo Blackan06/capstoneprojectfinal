@@ -44,12 +44,11 @@ namespace Service.Services.AnswerService
         }
         public async Task<ServiceResponse<Guid>> CreateNewAnswer(CreateAnswerDto createAnswerDto)
         {
-            var mapper = config.CreateMapper();
-            TimeZoneVietName(createAnswerDto.CreatedAt);
-
-            var answerCreate = mapper.Map<Answer>(createAnswerDto);
+            
+            createAnswerDto.AnswerName = createAnswerDto.AnswerName.Trim();
+            createAnswerDto.CreatedAt = TimeZoneVietName(createAnswerDto.CreatedAt);
+            var answerCreate = _mapper.Map<Answer>(createAnswerDto);
             answerCreate.Id = Guid.NewGuid();
-            answerCreate.AnswerName = createAnswerDto.AnswerName.Trim();
 
             await _answerRepository.AddAsync(answerCreate);
 
@@ -164,7 +163,7 @@ namespace Service.Services.AnswerService
                 };
             }
         }
-        private void TimeZoneVietName(DateTime dateTime)
+        private DateTime TimeZoneVietName(DateTime dateTime)
         {
             TimeZoneInfo vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
 
@@ -173,6 +172,7 @@ namespace Service.Services.AnswerService
 
             // Chuyển múi giờ từ UTC sang múi giờ Việt Nam
             dateTime = TimeZoneInfo.ConvertTimeFromUtc(utcNow, vietnamTimeZone);
+            return dateTime;
         }
 
         public async Task<ServiceResponse<bool>> UpdateAnswer(Guid id, UpdateAnswerDto answerDto)

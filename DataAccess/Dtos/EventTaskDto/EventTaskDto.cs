@@ -15,11 +15,10 @@ namespace DataAccess.Dtos.EventTaskDto
         public string EventName { get; set; }
         public double Point { get; set; }
         public int Priority { get; set; }
-
+        public string Status { get; set; }
         public TimeSpan StartTime { get; set; }
         public TimeSpan EndTime { get; set; }
         [JsonIgnore]
-
         public DateTime CreatedAt { get; set; }
 
     }

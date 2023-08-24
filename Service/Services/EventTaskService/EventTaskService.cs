@@ -3,6 +3,7 @@ using BusinessObjects.Model;
 using DataAccess.Configuration;
 using DataAccess.Dtos.EventDto;
 using DataAccess.Dtos.EventTaskDto;
+using DataAccess.Dtos.ExchangeHistoryDto;
 using DataAccess.Dtos.MajorDto;
 using DataAccess.Dtos.PlayerDto;
 using DataAccess.Dtos.TaskDto;
@@ -26,10 +27,7 @@ namespace Service.Services.EventTaskService
         private readonly IEventRepositories _eventRepository;
         private readonly ITaskRepositories _taskRepository;
         private readonly IMapper _mapper;
-        MapperConfiguration config = new MapperConfiguration(cfg =>
-        {
-            cfg.AddProfile(new MapperConfig());
-        });
+       
         public EventTaskService(IEventTaskRepository eventTaskRepository, IMapper mapper, IEventRepositories eventRepositories, ITaskRepositories taskRepository)
         {
             _eventTaskRepository = eventTaskRepository;
@@ -37,7 +35,7 @@ namespace Service.Services.EventTaskService
             _taskRepository = taskRepository;
             _mapper = mapper;
         }
-        private void TimeZoneVietName(DateTime dateTime)
+        private DateTime TimeZoneVietName(DateTime dateTime)
         {
             TimeZoneInfo vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
 
@@ -46,6 +44,7 @@ namespace Service.Services.EventTaskService
 
             // Chuyển múi giờ từ UTC sang múi giờ Việt Nam
             dateTime = TimeZoneInfo.ConvertTimeFromUtc(utcNow, vietnamTimeZone);
+            return dateTime;
         }
         public async Task<ServiceResponse<Guid>> CreateNewEventTask(CreateEventTaskDto createEventTaskDto)
         {
@@ -72,7 +71,7 @@ namespace Service.Services.EventTaskService
             }
 
             // Kiểm tra xem thời gian StartTime và EndTime của công việc nằm trong khoảng thời gian của sự kiện
-            if (createEventTaskDto.StartTime < createEventTaskDto.EndTime)
+            if (createEventTaskDto.StartTime >= createEventTaskDto.EndTime)
             {
                 return new ServiceResponse<Guid>
                 {
@@ -81,10 +80,18 @@ namespace Service.Services.EventTaskService
                     StatusCode = 400
                 };
             }
-            TimeZoneVietName(createEventTaskDto.CreatedAt);
-
-            var mapper = config.CreateMapper();
-            var eventTaskcreate = mapper.Map<EventTask>(createEventTaskDto);
+            if(createEventTaskDto.Point <= 0)
+            {
+                return new ServiceResponse<Guid>
+                {
+                    Message = "Point must be large than 0.",
+                    Success = false,
+                    StatusCode = 400
+                };
+            }
+            createEventTaskDto.CreatedAt = TimeZoneVietName(createEventTaskDto.CreatedAt);
+            createEventTaskDto.Status = "ACTIVE";
+            var eventTaskcreate = _mapper.Map<EventTask>(createEventTaskDto);
             eventTaskcreate.Id = Guid.NewGuid();
 
             await _eventTaskRepository.AddAsync(eventTaskcreate);
@@ -213,7 +220,7 @@ namespace Service.Services.EventTaskService
             }
 
             // Kiểm tra xem thời gian StartTime và EndTime của công việc nằm trong khoảng thời gian của sự kiện
-            if (eventTaskDto.StartTime < eventTaskDto.EndTime)
+            if (eventTaskDto.StartTime >= eventTaskDto.EndTime)
             {
                 return new ServiceResponse<bool>
                 {
@@ -222,7 +229,15 @@ namespace Service.Services.EventTaskService
                     StatusCode = 400
                 };
             }
-           
+            if (eventTaskDto.Point <= 0)
+            {
+                return new ServiceResponse<bool>
+                {
+                    Message = "Point must be large than 0.",
+                    Success = false,
+                    StatusCode = 400
+                };
+            }
             try
             {
                 existingEventTask.StartTime = eventTaskDto.StartTime;
@@ -230,7 +245,7 @@ namespace Service.Services.EventTaskService
                 existingEventTask.Priority = eventTaskDto.Priority;
                 existingEventTask.Point = eventTaskDto.Point;
 
-                await _eventTaskRepository.UpdateAsync(id, existingEventTask);
+                await _eventTaskRepository.UpdateAsync(existingEventTask);
                 return new ServiceResponse<bool>
                 {
                     Data = true,
@@ -268,7 +283,6 @@ namespace Service.Services.EventTaskService
             try
             {
                 var taskDetail = await _eventTaskRepository.GetByWithCondition(x => x.TaskId == taskId, null, true);
-                var _mapper = config.CreateMapper();
                 var taskDetailDto = _mapper.Map<EventTaskDto>(taskDetail);
                 if (taskDetail == null)
                 {
@@ -325,7 +339,6 @@ namespace Service.Services.EventTaskService
         public async Task<ServiceResponse<List<Guid>>> CreateNewEventTasks(CreateListEventTaskDto createEventTaskDtos)
         {
             var addedEventTaskIds = new List<Guid>();
-            var mapper = config.CreateMapper();
 
             var newEventTasks = new List<EventTask>();
             int index = 0;
@@ -354,7 +367,15 @@ namespace Service.Services.EventTaskService
                         StatusCode = 400
                     };
                 }
-
+                if (createEventTaskDtos.Point <= 0)
+                {
+                    return new ServiceResponse<List<Guid>>
+                    {
+                        Message = "Point must be large than 0.",
+                        Success = false,
+                        StatusCode = 400
+                    };
+                }
                 // Check if the task's time range overlaps with existing tasks in the event
                 var tasksWithinEventTimeRange = await _eventTaskRepository.ExistsAsync(et =>
                     et.EventId == createEventTaskDtos.EventId &&
@@ -377,8 +398,8 @@ namespace Service.Services.EventTaskService
                 createEventTaskDtos.Priority = maxExistingPriority + index;
                 createEventTaskDtos.Status = "ACTIVE";
                 createEventTaskDtos.Point = createEventTaskDtos.Point;
-                TimeZoneVietName(createEventTaskDtos.CreatedAt);
-                var eventTaskCreate = mapper.Map<EventTask>(createEventTaskDtos);
+                createEventTaskDtos.CreatedAt = TimeZoneVietName(createEventTaskDtos.CreatedAt);
+                var eventTaskCreate = _mapper.Map<EventTask>(createEventTaskDtos);
                 eventTaskCreate.Id = Guid.NewGuid();
                 eventTaskCreate.TaskId = dto;
                 addedEventTaskIds.Add(eventTaskCreate.Id);

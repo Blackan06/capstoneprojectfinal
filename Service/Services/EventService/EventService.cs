@@ -4,6 +4,7 @@ using DataAccess;
 using DataAccess.Configuration;
 using DataAccess.Dtos.AnswerDto;
 using DataAccess.Dtos.EventDto;
+using DataAccess.Dtos.EventTaskDto;
 using DataAccess.Dtos.LocationDto;
 using DataAccess.Dtos.StudentDto;
 using DataAccess.Dtos.TaskDto;
@@ -36,7 +37,7 @@ namespace Service.Services.EventService
             _eventRepository = eventRepository;
             _mapper = mapper;
         }
-        private void TimeZoneVietName(DateTime dateTime)
+        private DateTime TimeZoneVietName(DateTime dateTime)
         {
             TimeZoneInfo vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
 
@@ -45,6 +46,7 @@ namespace Service.Services.EventService
 
             // Chuyển múi giờ từ UTC sang múi giờ Việt Nam
             dateTime = TimeZoneInfo.ConvertTimeFromUtc(utcNow, vietnamTimeZone);
+            return dateTime;
         }
         public async Task<ServiceResponse<Guid>> CreateNewEvent(CreateEventDto createEventDto)
         {
@@ -60,9 +62,8 @@ namespace Service.Services.EventService
             }
             createEventDto.Name = createEventDto.Name.Trim();
             createEventDto.Status = createEventDto.Status.Trim();
-            TimeZoneVietName(createEventDto.CreatedAt);
-            var mapper = config.CreateMapper();
-            var eventcreate = mapper.Map<Event>(createEventDto);
+            createEventDto.CreatedAt = TimeZoneVietName(createEventDto.CreatedAt);
+            var eventcreate = _mapper.Map<Event>(createEventDto);
             eventcreate.Id = Guid.NewGuid();
             await _eventRepository.AddAsync(eventcreate);
 
@@ -260,9 +261,8 @@ namespace Service.Services.EventService
                                     Id = Guid.NewGuid(),
                                     Name = worksheet.Cells[row, 1].Value?.ToString().Trim(),
                                     Status = worksheet.Cells[row, 2].Value?.ToString().Trim()
-
                                 };
-                                TimeZoneVietName(data.CreatedAt);
+                                data.CreatedAt = TimeZoneVietName(data.CreatedAt);
 
                                 if (string.IsNullOrEmpty(data.Name))
                                 {
@@ -292,7 +292,7 @@ namespace Service.Services.EventService
             {
                 return new ServiceResponse<string>
                 {
-                    Data = null,
+                    Data = ex.Message,
                     Message = "Failed to process uploaded file.",
                     Success = false,
                     StatusCode = 500
@@ -365,12 +365,12 @@ namespace Service.Services.EventService
         }
 
 
-        public async Task<ServiceResponse<IEnumerable<GetTaskAndEventDto>>> GetTaskAndEventListByTimeNow(Guid schoolId)
+        public async Task<ServiceResponse<GetTaskAndEventDto>> GetTaskAndEventListByTimeNow(Guid schoolId)
         {
             var events = await _eventRepository.GetTaskAndEventListByTimeNow(schoolId);
             if(events == null)
             {
-                return new ServiceResponse<IEnumerable<GetTaskAndEventDto>>
+                return new ServiceResponse<GetTaskAndEventDto>
                 {
                     Data = null,
                     Message = "Failed Data null",
@@ -380,7 +380,7 @@ namespace Service.Services.EventService
             }
             else
             {
-                return new ServiceResponse<IEnumerable<GetTaskAndEventDto>>
+                return new ServiceResponse<GetTaskAndEventDto>
                 {
                     Data = events,
                     Message = "Success",

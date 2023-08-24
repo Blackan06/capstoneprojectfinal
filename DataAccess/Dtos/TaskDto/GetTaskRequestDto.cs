@@ -19,6 +19,7 @@ namespace DataAccess.Dtos.TaskDto
         public double Point { get; set; }
         public string Type { get; set; }
         public string Status { get; set; }
+        public int Priority { get; set; }
         public TimeSpan Starttime { get; set; }
         public TimeSpan Endtime  { get; set; }
     }

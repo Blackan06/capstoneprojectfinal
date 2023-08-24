@@ -14,8 +14,9 @@ namespace DataAccess.Dtos.SchoolEventDto
         public Guid SchoolId { get; set; }
         public string EventName { get; set; }
         public string SchoolName { get; set; }
-        public string Approvalstatus { get; set; }
-
+        public string ApprovalStatus { get; set; }
+        public DateTime StartTime { get; set; }
+        public DateTime EndTime { get; set; }
         public string Status { get; set; }
         [JsonIgnore]
         public DateTime CreatedAt { get; set; }

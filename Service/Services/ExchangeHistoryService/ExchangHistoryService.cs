@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using BusinessObjects.Model;
 using DataAccess.Configuration;
+using DataAccess.Dtos.AnswerDto;
 using DataAccess.Dtos.EventTaskDto;
 using DataAccess.Dtos.ExchangeHistoryDto;
 using DataAccess.Dtos.LocationDto;
@@ -19,10 +20,7 @@ namespace Service.Services.ExchangeHistoryService
     {
         private readonly IExchangeHistoryRepository _exchangeHistoryRepository;
         private readonly IMapper _mapper;
-        MapperConfiguration config = new MapperConfiguration(cfg =>
-        {
-            cfg.AddProfile(new MapperConfig());
-        });
+     
         public ExchangHistoryService(IExchangeHistoryRepository exchangeHistoryRepository, IMapper mapper)
         {
             _exchangeHistoryRepository = exchangeHistoryRepository;
@@ -30,13 +28,12 @@ namespace Service.Services.ExchangeHistoryService
         }
         public async Task<ServiceResponse<Guid>> CreateNewExchangeHistory(CreateExchangeHistoryDto createExchangeHistoryDto)
         {
-            var mapper = config.CreateMapper();
-            TimeZoneVietName(createExchangeHistoryDto.CreatedAt);
-
-            var exchangeHistoryCreate = mapper.Map<ExchangeHistory>(createExchangeHistoryDto);
+            createExchangeHistoryDto.CreatedAt = TimeZoneVietName(createExchangeHistoryDto.CreatedAt);
+            createExchangeHistoryDto.ExchangeDate = TimeZoneVietName(DateTime.UtcNow);
+            createExchangeHistoryDto.Status = "SUCCESS";
+            var exchangeHistoryCreate = _mapper.Map<ExchangeHistory>(createExchangeHistoryDto);
             exchangeHistoryCreate.Id = Guid.NewGuid();
-            exchangeHistoryCreate.ExchangeDate = DateTime.UtcNow;
-            exchangeHistoryCreate.Status = "SUCCESS";
+           
             await _exchangeHistoryRepository.AddAsync(exchangeHistoryCreate);
 
             return new ServiceResponse<Guid>
@@ -73,7 +70,7 @@ namespace Service.Services.ExchangeHistoryService
                 };
             }
         }
-        private void TimeZoneVietName(DateTime dateTime)
+        private DateTime TimeZoneVietName(DateTime dateTime)
         {
             TimeZoneInfo vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
 
@@ -82,6 +79,7 @@ namespace Service.Services.ExchangeHistoryService
 
             // Chuyển múi giờ từ UTC sang múi giờ Việt Nam
             dateTime = TimeZoneInfo.ConvertTimeFromUtc(utcNow, vietnamTimeZone);
+            return dateTime;
         }
         public async Task<ServiceResponse<IEnumerable<ExchangeHistoryDto>>> GetExchangeHistory()
         {
@@ -163,7 +161,7 @@ namespace Service.Services.ExchangeHistoryService
                 }
                 existingExchangeHistory.Quantity = exchangeHistoryDto.Quantity;
                 existingExchangeHistory.Status = exchangeHistoryDto.Status;
-                await _exchangeHistoryRepository.UpdateAsync(id, existingExchangeHistory);
+                await _exchangeHistoryRepository.UpdateAsync(existingExchangeHistory);
                 return new ServiceResponse<bool>
                 {   
                     Data = true,

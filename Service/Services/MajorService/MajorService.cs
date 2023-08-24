@@ -24,10 +24,7 @@ namespace Service.Services.MajorService
     {
         private readonly IMajorRepository _majorRepository;
         private readonly IMapper _mapper;
-        MapperConfiguration config = new MapperConfiguration(cfg =>
-        {
-            cfg.AddProfile(new MapperConfig());
-        });
+    
         public MajorService(IMajorRepository majorRepository, IMapper mapper)
         {
             _majorRepository = majorRepository;
@@ -44,14 +41,13 @@ namespace Service.Services.MajorService
                     StatusCode = 400
                 };
             }
-            var mapper = config.CreateMapper();
-            TimeZoneVietName(createMajorDto.CreatedAt);
-
-            var createMajor = mapper.Map<Major>(createMajorDto);
+            createMajorDto.CreatedAt = TimeZoneVietName(createMajorDto.CreatedAt);
+            createMajorDto.Status = createMajorDto.Status.Trim();
+            createMajorDto.Description = createMajorDto.Description.Trim();
+            createMajorDto.Name = createMajorDto.Name.Trim();
+            var createMajor = _mapper.Map<Major>(createMajorDto);
             createMajor.Id = Guid.NewGuid();
-            createMajor.Status = createMajorDto.Status.Trim();
-            createMajor.Description = createMajorDto.Description.Trim();
-            createMajor.Name = createMajorDto.Name.Trim();
+      
             await _majorRepository.AddAsync(createMajor);
 
             return new ServiceResponse<Guid>
@@ -64,7 +60,7 @@ namespace Service.Services.MajorService
         }
 
 
-        private void TimeZoneVietName(DateTime dateTime)
+        private DateTime TimeZoneVietName(DateTime dateTime)
         {
             TimeZoneInfo vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
 
@@ -73,6 +69,7 @@ namespace Service.Services.MajorService
 
             // Chuyển múi giờ từ UTC sang múi giờ Việt Nam
             dateTime = TimeZoneInfo.ConvertTimeFromUtc(utcNow, vietnamTimeZone);
+            return dateTime;
         }
         public async Task<ServiceResponse<MajorDto>> GetMajorById(Guid majorId)
         {
@@ -161,7 +158,7 @@ namespace Service.Services.MajorService
                 existingMajor.Status = updateMajorDto.Status.Trim();
                 existingMajor.Description = updateMajorDto.Description.Trim();
                 existingMajor.Name = updateMajorDto.Name.Trim();
-                await _majorRepository.UpdateAsync(id, existingMajor);
+                await _majorRepository.UpdateAsync(existingMajor);
                 return new ServiceResponse<bool>
                 {
                     Data = true,
@@ -238,7 +235,7 @@ namespace Service.Services.MajorService
                         {
                             var rowCount = worksheet.Dimension.Rows;
                             var dataList = new List<MajorDto>();
-
+                            var errorMessages = new List<string>();
                             for (int row = 2; row <= rowCount; row++)
                             {
                                 var data = new MajorDto
@@ -248,13 +245,17 @@ namespace Service.Services.MajorService
                                     Description = worksheet.Cells[row, 2].Value.ToString().Trim(),
                                     Status = "ACTIVE",
                                 };
+                                data.CreatedAt = TimeZoneVietName(data.CreatedAt);
 
+                                if (string.IsNullOrEmpty(data.Name))
+                                {
+                                    errorMessages.Add($"Row {row}: Fullname is required.");
+                                }
                                 dataList.Add(data);
                             }
 
                             // Start from row 2 to skip the header row
 
-                            var mapper = config.CreateMapper();
                             var locations = _mapper.Map<List<Major>>(dataList);
                             await _majorRepository.AddRangeAsync(locations);
                             await _majorRepository.SaveChangesAsync();

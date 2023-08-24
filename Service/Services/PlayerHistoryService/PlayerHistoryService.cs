@@ -21,10 +21,7 @@ namespace Service.Services.PlayerHistoryService
     {
         private readonly IPlayerHistoryRepository _playerHistoryRepository;
         private readonly IMapper _mapper;
-        MapperConfiguration config = new MapperConfiguration(cfg =>
-        {
-            cfg.AddProfile(new MapperConfig());
-        });
+      
         public PlayerHistoryService(IPlayerHistoryRepository playerHistoryRepository, IMapper mapper)
         {
             _playerHistoryRepository = playerHistoryRepository;
@@ -48,10 +45,9 @@ namespace Service.Services.PlayerHistoryService
                 else
                 {
                     createPlayerHistoryDto.Status = createPlayerHistoryDto.Status.Trim();
-                    TimeZoneVietName(createPlayerHistoryDto.CreatedAt);
+                    createPlayerHistoryDto.CreatedAt = TimeZoneVietName(createPlayerHistoryDto.CreatedAt);
 
-                    var mapper = config.CreateMapper();
-                    var createPlayerHistory = mapper.Map<PlayerHistory>(createPlayerHistoryDto);
+                    var createPlayerHistory = _mapper.Map<PlayerHistory>(createPlayerHistoryDto);
                     createPlayerHistory.Id = Guid.NewGuid();
                     await _playerHistoryRepository.AddAsync(createPlayerHistory);
 
@@ -167,9 +163,7 @@ namespace Service.Services.PlayerHistoryService
         {
             try
             {
-             
                 var playerHistory = await _playerHistoryRepository.GetByWithCondition(x => x.EventtaskId == eventTaskId, null, true);
-                var _mapper = config.CreateMapper();
                 var playerHistoryDto = _mapper.Map<PlayerHistoryDto>(playerHistory);
                
                 if (playerHistoryDto == null)
@@ -250,7 +244,7 @@ namespace Service.Services.PlayerHistoryService
                 existingPlayerHistory.EventtaskId = PlayerHistoryDto.EventtaskId;
                 existingPlayerHistory.CompletedTime = PlayerHistoryDto.CompletedTime;
                 existingPlayerHistory.Status = PlayerHistoryDto.Status.Trim();
-                await _playerHistoryRepository.UpdateAsync(id, existingPlayerHistory);
+                await _playerHistoryRepository.UpdateAsync(existingPlayerHistory);
                 return new ServiceResponse<bool>
                 {
                     Data = true,
@@ -277,7 +271,7 @@ namespace Service.Services.PlayerHistoryService
                 }
             }
         }
-        private void TimeZoneVietName(DateTime dateTime)
+        private DateTime TimeZoneVietName(DateTime dateTime)
         {
             TimeZoneInfo vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
 
@@ -286,6 +280,7 @@ namespace Service.Services.PlayerHistoryService
 
             // Chuyển múi giờ từ UTC sang múi giờ Việt Nam
             dateTime = TimeZoneInfo.ConvertTimeFromUtc(utcNow, vietnamTimeZone);
+            return dateTime;
         }
         private async Task<bool> EventTaskExists(Guid id)
         {

@@ -24,10 +24,6 @@ namespace Service.Services.StudentService
     {
         private readonly IStudentRepositories _studentRepository;
         private readonly IMapper _mapper;
-        MapperConfiguration config = new MapperConfiguration(cfg =>
-        {
-            cfg.AddProfile(new MapperConfig());
-        });
         public StudentService(IStudentRepositories studentRepository, IMapper mapper)
         {
             _studentRepository = studentRepository;
@@ -59,10 +55,8 @@ namespace Service.Services.StudentService
             createStudentDto.Classname = createStudentDto.Classname.Trim();
             createStudentDto.Fullname = createStudentDto.Fullname.Trim();
             createStudentDto.Status = createStudentDto.Status.Trim();
-            TimeZoneVietName(createStudentDto.CreatedAt);
-
-            var mapper = config.CreateMapper();
-            var createStudent = mapper.Map<Student>(createStudentDto);
+            createStudentDto.CreatedAt = TimeZoneVietName(createStudentDto.CreatedAt);
+            var createStudent = _mapper.Map<Student>(createStudentDto);
             createStudent.Id = Guid.NewGuid();
             await _studentRepository.AddAsync(createStudent);
 
@@ -172,14 +166,27 @@ namespace Service.Services.StudentService
                     StatusCode = 400
                 };
             }
+            var existingStudent = await _studentRepository.GetById(id);
+
+            if (existingStudent == null)
+            {
+                return new ServiceResponse<bool>
+                {
+                    Data = false,
+                    Message = "Student not found",
+                    Success = false,
+                    StatusCode = 404
+                };
+            }
             try
             {
-                studentDto.Email = studentDto.Email.Trim();
-                studentDto.GraduateYear = studentDto.GraduateYear;
-                studentDto.Classname = studentDto.Classname.Trim();
-                studentDto.Fullname = studentDto.Fullname.Trim();
-                studentDto.Status = studentDto.Status.Trim();
-                await _studentRepository.UpdateAsync(id, studentDto);
+
+                existingStudent.Email = studentDto.Email.Trim();
+                existingStudent.GraduateYear = studentDto.GraduateYear;
+                existingStudent.Classname = studentDto.Classname.Trim();
+                existingStudent.Fullname = studentDto.Fullname.Trim();
+                existingStudent.Status = studentDto.Status.Trim();
+                await _studentRepository.UpdateAsync(existingStudent);
                 return new ServiceResponse<bool>
                 {
                     Data = true,
@@ -318,7 +325,7 @@ namespace Service.Services.StudentService
                                     Classname = worksheet.Cells[row, 5].Text.Trim(),
                                     Status = "ACTIVE"
                                 };
-                                TimeZoneVietName(data.CreatedAt);
+                                data.CreatedAt = TimeZoneVietName(data.CreatedAt);
                                 string graduateYearText = worksheet.Cells[row, 4].Text;
 
                                 if (string.IsNullOrEmpty(data.Fullname))
@@ -368,7 +375,6 @@ namespace Service.Services.StudentService
                             }
                             // Start from row 2 to skip the header row
 
-                            var mapper = config.CreateMapper();
                             var locations = _mapper.Map<List<Student>>(dataList);
                             await _studentRepository.AddRangeAsync(locations);
                             await _studentRepository.SaveChangesAsync();
@@ -498,7 +504,7 @@ namespace Service.Services.StudentService
                 return excelData;
             }
         }
-        private void TimeZoneVietName(DateTime dateTime)
+        private DateTime TimeZoneVietName(DateTime dateTime)
         {
             TimeZoneInfo vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
 
@@ -507,6 +513,7 @@ namespace Service.Services.StudentService
 
             // Chuyển múi giờ từ UTC sang múi giờ Việt Nam
             dateTime = TimeZoneInfo.ConvertTimeFromUtc(utcNow, vietnamTimeZone);
+            return dateTime;
         }
     }
 }
