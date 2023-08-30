@@ -11,6 +11,9 @@ using Service.Services.QuestionService;
 using DataAccess.Dtos.QuestionDto;
 using Microsoft.AspNetCore.Authorization;
 using DataAccess.Dtos.ItemDto;
+using BusinessObjects.Model;
+using DataAccess.Dtos.AnswerDto;
+using System.Collections.Generic;
 
 namespace FPTHCMAdventuresAPI.Controllers
 {
@@ -117,8 +120,7 @@ namespace FPTHCMAdventuresAPI.Controllers
 
 
         [HttpPut("{id}")]
-
-        public async Task<ActionResult<ServiceResponse<GetQuestionDto>>> UpdateQuestion(Guid id, [FromBody] UpdateQuestionDto updateQuestionDto)
+        public async Task<ActionResult<ServiceResponse<bool>>> UpdateQuestionAndAnswer(Guid id, [FromBody]Dictionary<string, string> requestData)
         {
             try
             {
@@ -126,22 +128,39 @@ namespace FPTHCMAdventuresAPI.Controllers
                 {
                     return BadRequest(ModelState);
                 }
-                var res = await _questionService.UpdateQuestion(id, updateQuestionDto);
-                if (!res.Success)
+
+                UpdateQuestionDto updateQuestionDto = new UpdateQuestionDto
                 {
-                    return BadRequest(res);
+                    MajorName = requestData["majorName"],
+                    Name = requestData["name"],
+                    Status = requestData["status"],
+                    Answers = new List<GetAnswerData>()
+                };
+
+                foreach (var entry in requestData)
+                {
+                    if (Guid.TryParse(entry.Key, out Guid answerId))
+                    {
+                        updateQuestionDto.Answers.Add(new GetAnswerData
+                        {
+                            AnswerId = answerId,
+                            AnswerName = entry.Value
+                        });
+                    }
                 }
-                return Ok(res);
+
+                // Gọi phương thức UpdateQuestionAndAnswer với dữ liệu đã chuyển đổi
+                var response = await _questionService.UpdateQuestionAndAnswer(id, updateQuestionDto);
+
+                return Ok();
             }
             catch (Exception ex)
             {
-
                 return StatusCode(500, "Internal server error: " + ex.Message);
             }
         }
-
         [HttpPost("upload-excel-question")]
-        public async Task<IActionResult> UploadExcel(IFormFile file)
+        public async Task<IActionResult> UploadExcelQuestionByMajorId(IFormFile file)
         {
             var serviceResponse = await _questionService.ImportDataFromExcel(file);
 

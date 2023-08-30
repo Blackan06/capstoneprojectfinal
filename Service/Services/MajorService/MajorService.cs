@@ -41,7 +41,7 @@ namespace Service.Services.MajorService
                     StatusCode = 400
                 };
             }
-            createMajorDto.CreatedAt = TimeZoneVietName(createMajorDto.CreatedAt);
+            createMajorDto.CreatedAt = TimeZoneVietName(DateTime.UtcNow);
             createMajorDto.Status = createMajorDto.Status.Trim();
             createMajorDto.Description = createMajorDto.Description.Trim();
             createMajorDto.Name = createMajorDto.Name.Trim();
@@ -158,7 +158,7 @@ namespace Service.Services.MajorService
                 existingMajor.Status = updateMajorDto.Status.Trim();
                 existingMajor.Description = updateMajorDto.Description.Trim();
                 existingMajor.Name = updateMajorDto.Name.Trim();
-                await _majorRepository.UpdateAsync(existingMajor);
+                await _majorRepository.UpdateAsync(id, existingMajor);
                 return new ServiceResponse<bool>
                 {
                     Data = true,
@@ -236,6 +236,26 @@ namespace Service.Services.MajorService
                             var rowCount = worksheet.Dimension.Rows;
                             var dataList = new List<MajorDto>();
                             var errorMessages = new List<string>();
+                            var headerRow = worksheet.Cells[1, 1, 1, worksheet.Dimension.Columns];
+                            var expectedHeaders = new List<string>
+                            {
+                                "Major Name", "Description"
+                            };
+
+                            // Kiểm tra tên cột trong tệp Excel
+                            foreach (var cell in headerRow)
+                            {
+                                if (!expectedHeaders.Contains(cell.Text.Trim()))
+                                {
+                                    return new ServiceResponse<string>
+                                    {
+                                        Data = null,
+                                        Message = "Invalid column names in the Excel file.",
+                                        Success = false,
+                                        StatusCode = 400
+                                    };
+                                }
+                            }
                             for (int row = 2; row <= rowCount; row++)
                             {
                                 var data = new MajorDto

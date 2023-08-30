@@ -41,9 +41,6 @@ namespace DataAccess.Dtos.PlayerDto
             get { return passcode; }
             set { passcode = value; }
         }
-       
-       
-
         public double TotalPoint
         {
             get { return totalPoint; }

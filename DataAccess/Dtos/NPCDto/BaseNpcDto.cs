@@ -9,7 +9,7 @@ namespace DataAccess.Dtos.NPCDto
         private string name;
         private string introduce;
         private string status;
-        private DateTime createdAt;
+        private DateTime? createdAt;
 
         [Required]
         public string Name
@@ -33,7 +33,7 @@ namespace DataAccess.Dtos.NPCDto
             set { status = value; }
         }
         [JsonIgnore]
-        public DateTime CreatedAt
+        public DateTime? CreatedAt
         {
             get { return createdAt; }
             set { createdAt = value; }

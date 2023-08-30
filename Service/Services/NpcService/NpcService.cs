@@ -40,7 +40,7 @@ namespace Service.Services.NpcService
             createNpcDto.Introduce = createNpcDto.Introduce.Trim();
             createNpcDto.Name = createNpcDto.Name.Trim();
             createNpcDto.Status = createNpcDto.Status.Trim();
-            createNpcDto.CreatedAt = TimeZoneVietName(createNpcDto.CreatedAt);
+            createNpcDto.CreatedAt = TimeZoneVietName(DateTime.UtcNow);
 
             var createNpc = _mapper.Map<Npc>(createNpcDto);
             createNpc.Id = Guid.NewGuid();
@@ -128,7 +128,7 @@ namespace Service.Services.NpcService
 
         public async Task<ServiceResponse<bool>> UpdateNpc(Guid id, UpdateNpcDto updateNpcDto)
         {
-            if (await _npcRepository.ExistsAsync(s => s.Name == updateNpcDto.Name))
+            if (await _npcRepository.ExistsAsync(s => s.Name == updateNpcDto.Name && s.Id != id))
             {
                 return new ServiceResponse<bool>
                 {
@@ -151,10 +151,9 @@ namespace Service.Services.NpcService
             }
             try
             {
-                existingNpc.Introduce = updateNpcDto.Introduce.Trim();
-                existingNpc.Name = updateNpcDto.Name.Trim();
+             
                 existingNpc.Status = updateNpcDto.Status.Trim();
-                await _npcRepository.UpdateAsync(existingNpc);
+                await _npcRepository.UpdateAsync(id, existingNpc);
                 return new ServiceResponse<bool>
                 {
                     Data = true,

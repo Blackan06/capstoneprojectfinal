@@ -1,7 +1,10 @@
 ﻿using AutoMapper;
 using BusinessObjects.Model;
+using DataAccess.Dtos.MajorDto;
+using DataAccess.Dtos.NPCDto;
 using DataAccess.GenericRepositories;
 using DataAccess.Repositories.EventTaskRepositories;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,6 +24,10 @@ namespace DataAccess.Repositories.MajorRepositories
             _mapper = mapper;
         }
 
-        
+        public async Task<Major> GetMajorByName(string majorName)
+        {
+            var major = await _dbContext.Majors.FirstOrDefaultAsync(x => x.Name.Trim() == majorName.Trim());
+            return major;
+        }
     }
 }

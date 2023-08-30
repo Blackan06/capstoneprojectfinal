@@ -89,7 +89,7 @@ namespace Service.Services.EventTaskService
                     StatusCode = 400
                 };
             }
-            createEventTaskDto.CreatedAt = TimeZoneVietName(createEventTaskDto.CreatedAt);
+            createEventTaskDto.CreatedAt = TimeZoneVietName(DateTime.UtcNow);
             createEventTaskDto.Status = "ACTIVE";
             var eventTaskcreate = _mapper.Map<EventTask>(createEventTaskDto);
             eventTaskcreate.Id = Guid.NewGuid();
@@ -164,7 +164,7 @@ namespace Service.Services.EventTaskService
         }
       
 
-        public async Task<ServiceResponse<bool>> UpdateTaskEvent(Guid id, UpdateEventTaskDto eventTaskDto)
+        public async Task<ServiceResponse<bool>> UpdateTaskEvent(Guid id,UpdateEventTaskDto eventTaskDto)
         {
             var existingEventTask = await _eventTaskRepository.GetAsync(id);
             if (existingEventTask == null)
@@ -176,51 +176,7 @@ namespace Service.Services.EventTaskService
                     StatusCode = 400
                 };
             }
-            if(await _eventTaskRepository.ExistsAsync(t => t.Priority == eventTaskDto.Priority && t.EventId == eventTaskDto.EventId && t.Id != id))
-            {
-                return new ServiceResponse<bool>
-                {
-                    Message = "Priority have exists ",
-                    Success = false,
-                    StatusCode = 400
-                };
-            }
-            // Kiểm tra xem sự kiện tồn tại hay không
-            var existingEvent = await _eventRepository.GetAsync(eventTaskDto.EventId);
-            if (existingEvent == null)
-            {
-                return new ServiceResponse<bool>
-                {
-                    Message = "Event does not exist.",
-                    Success = false,
-                    StatusCode = 400
-                };
-            }
-            if (existingEventTask.EventId != eventTaskDto.EventId)
-            {
-                return new ServiceResponse<bool>
-                {
-                    Message = "Cannot change EventId while updating EventTask.",
-                    Success = false,
-                    StatusCode = 400
-                };
-            }
-            // Kiểm tra xem có công việc nào trùng EventId và TaskId đã tồn tại trong sự kiện không
-            var isDuplicateEventTask = await _eventTaskRepository.ExistsAsync(t =>
-                t.EventId == eventTaskDto.EventId && t.TaskId == eventTaskDto.TaskId && t.Id != id);
-
-            if (isDuplicateEventTask)
-            {
-                return new ServiceResponse<bool>
-                {
-                    Message = "A task with the same EventId and TaskId already exists in the event.",
-                    Success = false,
-                    StatusCode = 400
-                };
-            }
-
-            // Kiểm tra xem thời gian StartTime và EndTime của công việc nằm trong khoảng thời gian của sự kiện
-            if (eventTaskDto.StartTime >= eventTaskDto.EndTime)
+            if (TimeSpan.Parse(eventTaskDto.StartTime) >= TimeSpan.Parse(eventTaskDto.EndTime))
             {
                 return new ServiceResponse<bool>
                 {
@@ -229,6 +185,7 @@ namespace Service.Services.EventTaskService
                     StatusCode = 400
                 };
             }
+
             if (eventTaskDto.Point <= 0)
             {
                 return new ServiceResponse<bool>
@@ -240,12 +197,11 @@ namespace Service.Services.EventTaskService
             }
             try
             {
-                existingEventTask.StartTime = eventTaskDto.StartTime;
-                existingEventTask.EndTime = eventTaskDto.EndTime;
-                existingEventTask.Priority = eventTaskDto.Priority;
+                existingEventTask.StartTime = TimeSpan.Parse(eventTaskDto.StartTime);
+                existingEventTask.EndTime = TimeSpan.Parse(eventTaskDto.EndTime);
                 existingEventTask.Point = eventTaskDto.Point;
 
-                await _eventTaskRepository.UpdateAsync(existingEventTask);
+                await _eventTaskRepository.UpdateAsync(id, existingEventTask);
                 return new ServiceResponse<bool>
                 {
                     Data = true,
@@ -339,12 +295,13 @@ namespace Service.Services.EventTaskService
         public async Task<ServiceResponse<List<Guid>>> CreateNewEventTasks(CreateListEventTaskDto createEventTaskDtos)
         {
             var addedEventTaskIds = new List<Guid>();
-
             var newEventTasks = new List<EventTask>();
+
             int index = 0;
             var existingEventTasks = await _eventTaskRepository.GetEventTaskByEventId(createEventTaskDtos.EventId);
             existingEventTasks = existingEventTasks.OrderByDescending(et => et.Priority).ToList();
-            foreach (var dto in createEventTaskDtos.TaskId)
+            var listTaskId = createEventTaskDtos.TaskId.Distinct().ToList();
+            foreach (var dto in listTaskId)
             {
                 // Check if a task with the same EventId and TaskId already exists
                 if (await _eventTaskRepository.ExistsAsync(t => t.EventId == createEventTaskDtos.EventId && t.TaskId == dto))
@@ -355,18 +312,7 @@ namespace Service.Services.EventTaskService
                         Success = false,
                         StatusCode = 400
                     };
-                }
-
-                // Check if StartTime is earlier than EndTime
-                if (createEventTaskDtos.StartTime >= createEventTaskDtos.EndTime)
-                {
-                    return new ServiceResponse<List<Guid>>
-                    {
-                        Message = "Task's StartTime must be earlier than EndTime.",
-                        Success = false,
-                        StatusCode = 400
-                    };
-                }
+                }               
                 if (createEventTaskDtos.Point <= 0)
                 {
                     return new ServiceResponse<List<Guid>>
@@ -380,8 +326,8 @@ namespace Service.Services.EventTaskService
                 var tasksWithinEventTimeRange = await _eventTaskRepository.ExistsAsync(et =>
                     et.EventId == createEventTaskDtos.EventId &&
                     (
-                        (createEventTaskDtos.StartTime >= et.StartTime && createEventTaskDtos.StartTime < et.EndTime) ||
-                        (createEventTaskDtos.EndTime > et.StartTime && createEventTaskDtos.EndTime <= et.EndTime)
+                        (TimeSpan.Parse(createEventTaskDtos.StartTime) >= et.StartTime && TimeSpan.Parse(createEventTaskDtos.StartTime) < et.EndTime) ||
+                        (TimeSpan.Parse(createEventTaskDtos.EndTime) > et.StartTime && TimeSpan.Parse(createEventTaskDtos.EndTime) <= et.EndTime)
                     ));
 
                 if (tasksWithinEventTimeRange)
@@ -393,20 +339,24 @@ namespace Service.Services.EventTaskService
                         StatusCode = 400
                     };
                 }
+                
                 index++;
                 int maxExistingPriority = existingEventTasks.Any() ? existingEventTasks.Max(et => et.Priority) : 0;
-                createEventTaskDtos.Priority = maxExistingPriority + index;
                 createEventTaskDtos.Status = "ACTIVE";
                 createEventTaskDtos.Point = createEventTaskDtos.Point;
                 createEventTaskDtos.CreatedAt = TimeZoneVietName(createEventTaskDtos.CreatedAt);
+
                 var eventTaskCreate = _mapper.Map<EventTask>(createEventTaskDtos);
                 eventTaskCreate.Id = Guid.NewGuid();
+                eventTaskCreate.StartTime = TimeSpan.Parse(createEventTaskDtos.StartTime);
+                eventTaskCreate.EndTime = TimeSpan.Parse(createEventTaskDtos.EndTime);
                 eventTaskCreate.TaskId = dto;
+                eventTaskCreate.Priority = maxExistingPriority + index;
                 addedEventTaskIds.Add(eventTaskCreate.Id);
                 newEventTasks.Add(eventTaskCreate);
             }
-
-            await _eventTaskRepository.AddRangeAsync(newEventTasks);
+            var checkNewEventTasks = newEventTasks.Distinct().ToList();
+            await _eventTaskRepository.AddRangeAsync(checkNewEventTasks);
 
             return new ServiceResponse<List<Guid>>
             {

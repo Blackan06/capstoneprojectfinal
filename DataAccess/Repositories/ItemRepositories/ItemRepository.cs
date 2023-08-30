@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using BusinessObjects.Model;
 using DataAccess.GenericRepositories;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,5 +21,10 @@ namespace DataAccess.Repositories.ItemRepositories
             _mapper = mapper;
         }
 
+        public async Task<Item> GetItemByName(string itemName)
+        {
+            var item = await _dbContext.Items.FirstOrDefaultAsync(x => x.Name.Trim() == itemName.Trim());
+            return item;
+        }
     }
 }

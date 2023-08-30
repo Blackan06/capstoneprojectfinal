@@ -46,7 +46,7 @@ namespace Service.Services.AnswerService
         {
             
             createAnswerDto.AnswerName = createAnswerDto.AnswerName.Trim();
-            createAnswerDto.CreatedAt = TimeZoneVietName(createAnswerDto.CreatedAt);
+            createAnswerDto.CreatedAt = TimeZoneVietName(DateTime.UtcNow);
             var answerCreate = _mapper.Map<Answer>(createAnswerDto);
             answerCreate.Id = Guid.NewGuid();
 

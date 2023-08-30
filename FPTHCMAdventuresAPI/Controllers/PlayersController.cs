@@ -7,6 +7,7 @@ using Service.Services.PlayerService;
 using DataAccess.Dtos.PlayerDto;
 using Microsoft.AspNetCore.Authorization;
 using System.Collections.Generic;
+using DataAccess.Dtos.StudentDto;
 
 namespace FPTHCMAdventuresAPI.Controllers
 {
@@ -41,6 +42,28 @@ namespace FPTHCMAdventuresAPI.Controllers
             }
         }
 
+        [HttpGet]
+        [Route("GetPlayerWithNickName")]
+
+        public async Task<ActionResult<ServiceResponse<PlayerDto>>> GetPlayerListWithNickName()
+        {
+            try
+            {
+                var res = await _playerService.GetPlayerWithNickName();
+                return Ok(res);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Internal server error: " + ex.Message);
+            }
+        }
+        [HttpGet]
+        [Route("filterdatawithschoolandevent")]
+        public async Task<ActionResult<GetStudentBySchoolAndEvent>> FilterDataBySchoolIdAndEventId(Guid? schoolId, Guid? eventId)
+        {
+            var eventDetail = await _playerService.filterData(schoolId, eventId);
+            return Ok(eventDetail);
+        }
         /*   [HttpGet("players/listPlayer-username", Name = "GetPlayerWithUserNames")]
 
            public async Task<ActionResult<ServiceResponse<GetPlayerDto>>> GetPlayerListWithUserName()

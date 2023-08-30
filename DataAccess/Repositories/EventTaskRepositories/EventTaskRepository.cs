@@ -39,48 +39,40 @@ namespace DataAccess.Repositories.EventTaskRepositories
         }
         public async Task<IEnumerable<GetTaskByEventIdDto>> GetTaskByEventTaskWithEventId(Guid eventId)
         {
-            var getTaskAndEventDtos = await _dbContext.SchoolEvents
-                .Include(se => se.Event)
-                    .ThenInclude(e => e.EventTasks)
-                        .ThenInclude(et => et.Task)
-                            .ThenInclude(t => t.Location)
-                .Include(se => se.Event)
-                    .ThenInclude(e => e.EventTasks)
-                        .ThenInclude(et => et.Task)
-                            .ThenInclude(t => t.Major)
-                .Include(se => se.Event)
-                    .ThenInclude(e => e.EventTasks)
-                        .ThenInclude(et => et.Task)
-                            .ThenInclude(t => t.Npc)
-                .Include(se => se.Event)
-                    .ThenInclude(e => e.EventTasks)
-                        .ThenInclude(et => et.Task)
-                            .ThenInclude(t => t.Item)
-                .Where(se => se.EventId == eventId)
-                .SelectMany(e => e.Event.EventTasks.Select(et => new GetTaskByEventIdDto
-                {
-                    EventName = e.Event.Name,
-                    TaskId = et.Task.Id,
-                    EventtaskId = et.Id,
-                    Name = et.Task.Name,
-                    ItemName = et.Task.Item.Name,
-                    LocationName = et.Task.Location.LocationName,
-                    MajorName = et.Task.Major.Name,
-                    MajorId = et.Task.MajorId,
-                    NpcName = et.Task.Npc.Name,
-                    Point = et.Point,
-                    Status = et.Task.Status,
-                    Type = et.Task.Type,
-                    Priority = et.Priority,
-                    Starttime = et.StartTime,
-                    Endtime = et.EndTime,
-                    EventSchoolStartTime = e.StartTime,
-                    EventSchoolEndTime = e.EndTime
-                }))
-                .OrderByDescending(dto => dto.Starttime) // Sắp xếp theo thời gian tạo mới
-                .ToListAsync();
+            var getTaskAndEventDtos = await _dbContext.EventTasks
+             .Include(et => et.Task)
+                 .ThenInclude(t => t.Location)
+             .Include(et => et.Task)
+                 .ThenInclude(t => t.Major)
+             .Include(et => et.Task)
+                 .ThenInclude(t => t.Npc)
+             .Include(et => et.Task)
+                 .ThenInclude(t => t.Item)
+             .Where(et => et.EventId == eventId)
+             .Select(et => new GetTaskByEventIdDto
+             {
+                 EventName = et.Event.Name,
+                 TaskId = et.Task.Id,
+                 EventtaskId = et.Id,
+                 Name = et.Task.Name,
+                 ItemName = et.Task.Item.Name,
+                 LocationName = et.Task.Location.LocationName,
+                 MajorName = et.Task.Major.Name,
+                 MajorId = et.Task.MajorId,
+                 NpcName = et.Task.Npc.Name,
+                 Point = et.Point,
+                 Status = et.Task.Status,
+                 Type = et.Task.Type,
+                 Priority = et.Priority,
+                 Starttime = et.StartTime,
+                 Endtime = et.EndTime,
+                 CreatedAt = et.CreatedAt
+             })
+             .OrderByDescending(dto => dto.CreatedAt)
+             .ToListAsync();
 
-            return getTaskAndEventDtos;
+                    return getTaskAndEventDtos;
+
         }
     }
 }

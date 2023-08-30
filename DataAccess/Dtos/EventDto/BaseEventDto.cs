@@ -6,9 +6,7 @@ namespace DataAccess.Dtos.EventDto
 {
     public abstract class BaseEventDto
     {
-        private string name;
-        private DateTime startTime;
-        private DateTime endTime;
+        private string name;       
         private string status;
         private DateTime createdAt;
 
@@ -19,19 +17,7 @@ namespace DataAccess.Dtos.EventDto
             set { name = value; }
         }
 
-        [Required]
-        public DateTime StartTime
-        {
-            get { return startTime; }
-            set { startTime = value; }
-        }
-
-        [Required]
-        public DateTime EndTime
-        {
-            get { return endTime; }
-            set { endTime = value; }
-        }
+     
 
         [Required]
         [RegularExpression("^(INACTIVE|ACTIVE)$", ErrorMessage = "Status must be 'INACTIVE' or 'ACTIVE'.")]

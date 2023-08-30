@@ -13,7 +13,7 @@ namespace FPTHCMAdventuresAPI.Controllers
 
     public class OpenApisController : ControllerBase
     {
-        private readonly string apiKey = "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";
+        private readonly string apiKey = "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";
         private string prompt = "Play the role of a university receptionist fpt in certain context and answer students' questions, students are talking to you.\n" +
                           "Answer the questions based on your personality, occupation, and talents.\n" +
                           "If the question is out of the range of your knowledge or out of the fpt university, say you don't know.\n" +

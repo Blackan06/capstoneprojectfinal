@@ -7,7 +7,10 @@ using DataAccess.Dtos.StudentDto;
 using DataAccess.Dtos.TaskDto;
 using DataAccess.Repositories.EventRepositories;
 using DataAccess.Repositories.EventTaskRepositories;
+using DataAccess.Repositories.ItemRepositories;
+using DataAccess.Repositories.LocationRepositories;
 using DataAccess.Repositories.MajorRepositories;
+using DataAccess.Repositories.NPCRepository;
 using DataAccess.Repositories.QuestionRepositories;
 using DataAccess.Repositories.TaskRepositories;
 using Microsoft.EntityFrameworkCore;
@@ -27,16 +30,22 @@ namespace Service.Services.TaskService
         private readonly IEventRepositories _eventRepository;
         private readonly IEventTaskRepository _eventTaskRepository;
         private readonly IMajorRepository _majorRepository;
+        private readonly INpcRepository _npcRepository;
+        private readonly IItemRepository _itemRepository;
+        private readonly ILocationRepository _locationRepository;
         private readonly IQuestionRepository _questionRepository;
         private readonly IMapper _mapper;
        
-        public TaskService(ITaskRepositories taskRepository, IMapper mapper,IEventTaskRepository eventTaskRepository , IEventRepositories eventRepositories, IMajorRepository majorRepository, IQuestionRepository questionRepository)
+        public TaskService(IItemRepository itemRepository, ITaskRepositories taskRepository, IMapper mapper,IEventTaskRepository eventTaskRepository , IEventRepositories eventRepositories, IMajorRepository majorRepository, IQuestionRepository questionRepository,ILocationRepository locationRepository,INpcRepository npcRepository)
         {
             _taskRepository = taskRepository;
             _eventRepository = eventRepositories;
             _eventTaskRepository = eventTaskRepository;
             _majorRepository = majorRepository; 
             _questionRepository = questionRepository;
+            _locationRepository = locationRepository; 
+            _npcRepository = npcRepository;
+            _itemRepository = itemRepository;
             _mapper = mapper;
         }
         public async Task<ServiceResponse<Guid>> CreateNewTask(CreateTaskDto createTaskDto)
@@ -59,13 +68,22 @@ namespace Service.Services.TaskService
                     StatusCode = 400
                 };
             }
+            if (await _taskRepository.ExistsAsync(s => s.Type == createTaskDto.Type))
+            {
+                return new ServiceResponse<Guid>
+                {
+                    Message = "Duplicated data: Task with the same type already exists.",
+                    Success = false,
+                    StatusCode = 400
+                };
+            }
             createTaskDto.Name = createTaskDto.Name.Trim();
             createTaskDto.Type = createTaskDto.Type.Trim();
             createTaskDto.Status = createTaskDto.Status.Trim();
-            createTaskDto.CreatedAt = TimeZoneVietName(createTaskDto.CreatedAt);
-             var taskcreate = _mapper.Map<Task>(createTaskDto);
+            createTaskDto.CreatedAt = TimeZoneVietName(DateTime.UtcNow);
+            var taskcreate = _mapper.Map<Task>(createTaskDto);
             taskcreate.Id = Guid.NewGuid();
-            if (taskcreate.Type == "questionandanswer")
+            if (taskcreate.Type == "QUESTIONANDANSWER")
             {
                 // Kiểm tra nếu ngành đã có câu hỏi đi kèm câu trả lời
                 var correspondingMajor = await _majorRepository.GetAsync(taskcreate.MajorId);
@@ -73,7 +91,7 @@ namespace Service.Services.TaskService
                 {
                     return new ServiceResponse<Guid>
                     {
-                        Message = "Không thể thêm công việc. Ngành tương ứng không được tìm thấy.",
+                        Message = "Can't add jobs. The corresponding branch was not found.",
                         Success = false,
                         StatusCode = 400
                     };
@@ -85,7 +103,18 @@ namespace Service.Services.TaskService
                 {
                     return new ServiceResponse<Guid>
                     {
-                        Message = "Không thể thêm công việc. Ngành phải có một câu hỏi đi kèm câu trả lời.",
+                        Message = "Can't add jobs. Industry must have a question with an answer.",
+                        Success = false,
+                        StatusCode = 400
+                    };
+                }
+            }else if(taskcreate.Type == "EXCHANGEITEM")
+            {
+                if(createTaskDto.ItemId == null)
+                {
+                    return new ServiceResponse<Guid>
+                    {
+                        Message = "Must have item",
                         Success = false,
                         StatusCode = 400
                     };
@@ -172,56 +201,11 @@ namespace Service.Services.TaskService
 
         public async Task<ServiceResponse<bool>> UpdateTask(Guid id, UpdateTaskDto updateTaskDto)
         {
-            var existingSchoolWithSameName = await _taskRepository.ExistsAsync(s => s.Name == updateTaskDto.Name && s.Id != id);
-            var existingSchoolWithSameEmail = await _taskRepository.ExistsAsync(s => s.LocationId == updateTaskDto.LocationId && s.Id != id);
-
-            if (existingSchoolWithSameName)
-            {
-                return new ServiceResponse<bool>
-                {
-                    Data = false,
-                    Message = "Duplicated data: Task with the same name already exists.",
-                    Success = false,
-                    StatusCode = 400
-                };
-            }
-            if (existingSchoolWithSameEmail)
-            {
-                return new ServiceResponse<bool>
-                {
-                    Data = false,
-                    Message = "Duplicated data: Task with the same location already exists.",
-                    Success = false,
-                    StatusCode = 400
-                };
-            }
-            if (updateTaskDto.Type == "questionandanswer")
-            {
-                // Kiểm tra nếu ngành đã có câu hỏi đi kèm câu trả lời
-                var correspondingMajor = await _majorRepository.GetAsync(updateTaskDto.MajorId);
-                if (correspondingMajor == null)
-                {
-                    return new ServiceResponse<bool>
-                    {
-                        Message = "Không thể thêm công việc. Ngành tương ứng không được tìm thấy.",
-                        Success = false,
-                        StatusCode = 400
-                    };
-                }
-
-                // Kiểm tra nếu câu hỏi của ngành đã có câu trả lời đi kèm
-                var questionWithAnswers = await _questionRepository.GetByMajorIdAsync(correspondingMajor.Id);
-                if (questionWithAnswers == null)
-                {
-                    return new ServiceResponse<bool>
-                    {
-                        Message = "Không thể thêm công việc. Ngành phải có một câu hỏi đi kèm câu trả lời.",
-                        Success = false,
-                        StatusCode = 400
-                    };
-                }
-            }
-
+            
+            Guid locationId = await GetLocationIdFromName(updateTaskDto.LocationName);
+            Guid majorId = await GetMajorIdFromName(updateTaskDto.MajorName);
+            Guid npcId = await GetNpcIdFromName(updateTaskDto.NpcName);
+            Guid? itemId = updateTaskDto.ItemName != null ? await GetItemIdFromName(updateTaskDto.ItemName) : (Guid?)null;
             var existingTask = await _taskRepository.GetById(id);
 
             if (existingTask == null)
@@ -234,12 +218,98 @@ namespace Service.Services.TaskService
                     StatusCode = 404
                 };
             }
+            var existingTaskWithSameName = await _taskRepository.ExistsAsync(s => s.Name == updateTaskDto.Name && s.Id != id);
+            
+            if (existingTaskWithSameName)
+            {
+                return new ServiceResponse<bool>
+                {
+                    Data = false,
+                    Message = "Duplicated data: Task with the same name already exists.",
+                    Success = false,
+                    StatusCode = 400
+                };
+            }
+            var existingTaskWithSameLocation = await _taskRepository.ExistsAsync(s => s.LocationId == locationId && s.Id != id);
+
+            if (existingTaskWithSameLocation)
+            {
+                return new ServiceResponse<bool>
+                {
+                    Data = false,
+                    Message = "Duplicated data: Task with the same location already exists.",
+                    Success = false,
+                    StatusCode = 400
+                };
+            }
+            var existingTaskWithSameType = await _taskRepository.ExistsAsync(s => s.Type == updateTaskDto.Type && s.Id != id);
+            if (existingTaskWithSameLocation)
+            {
+                return new ServiceResponse<bool>
+                {
+                    Data = false,
+                    Message = "Duplicated data: Task with the same type already exists.",
+                    Success = false,
+                    StatusCode = 400
+                };
+            }
+            if (updateTaskDto.Type == "QUESTIONANDANSWER")
+            {
+                // Kiểm tra nếu ngành đã có câu hỏi đi kèm câu trả lời
+                var correspondingMajor = await _majorRepository.GetAsync(majorId);
+                if (correspondingMajor == null)
+                {
+                    return new ServiceResponse<bool>
+                    {
+                        Message = "Can't add jobs. The corresponding branch was not found.",
+                        Success = false,
+                        StatusCode = 400
+                    };
+                }
+
+                // Kiểm tra nếu câu hỏi của ngành đã có câu trả lời đi kèm
+                var questionWithAnswers = await _questionRepository.GetByMajorIdAsync(correspondingMajor.Id);
+                if (questionWithAnswers == null)
+                {
+                    return new ServiceResponse<bool>
+                    {
+                        Message = "Can't add jobs. Industry must have a question with an answer.",
+                        Success = false,
+                        StatusCode = 400
+                    };
+                }
+            }else if(existingTask.Type == "EXCHANGEITEM")
+            {
+                if(existingTask.Type != updateTaskDto.Type)
+                {
+                    return new ServiceResponse<bool>
+                    {
+                        Message = "Cannot update task with type exchange item ",
+                        Success = false,
+                        StatusCode = 400
+                    };
+                }
+                if(itemId == null)
+                {
+                    return new ServiceResponse<bool>
+                    {
+                        Message = "Cannot update task with type exchange item and item not null",
+                        Success = false,
+                        StatusCode = 400
+                    };
+                }
+            }
             try
             {
+                existingTask.LocationId = locationId;
+                existingTask.MajorId = majorId;
+                existingTask.NpcId = npcId;
+                existingTask.ItemId = itemId;
                 existingTask.Name = updateTaskDto.Name.Trim();
                 existingTask.Type = updateTaskDto.Type.Trim();
                 existingTask.Status = updateTaskDto.Status.Trim();
-                await _taskRepository.UpdateAsync(existingTask);
+                await _taskRepository.UpdateAsync(id, existingTask);
+
                 return new ServiceResponse<bool>
                 {
                     Data = true,
@@ -310,5 +380,28 @@ namespace Service.Services.TaskService
             dateTime = TimeZoneInfo.ConvertTimeFromUtc(utcNow, vietnamTimeZone);
             return dateTime;
         }
+        private async Task<Guid> GetLocationIdFromName(string locationName)
+        {
+            var location = await _locationRepository.GetLocationByName(locationName);
+            return location.Id;
+        }
+
+        private async Task<Guid> GetMajorIdFromName(string majorName)
+        {
+            var major = await _majorRepository.GetMajorByName(majorName);
+            return major.Id;
+        }
+
+        private async Task<Guid> GetNpcIdFromName(string npcName)
+        {
+            var npc = await _npcRepository.GetNpcDTOByName(npcName);
+            return npc.Id;
+        } 
+        private async Task<Guid> GetItemIdFromName(string itemName)
+        {
+            var item = await _itemRepository.GetItemByName(itemName);
+            return item.Id;
+        }
+
     }
 }

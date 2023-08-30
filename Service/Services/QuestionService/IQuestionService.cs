@@ -1,4 +1,5 @@
-﻿using DataAccess.Dtos.MajorDto;
+﻿using DataAccess.Dtos.AnswerDto;
+using DataAccess.Dtos.MajorDto;
 using DataAccess.Dtos.QuestionDto;
 using Microsoft.AspNetCore.Http;
 using System;
@@ -15,12 +16,11 @@ namespace Service.Services.QuestionService
         Task<ServiceResponse<QuestionDto>> GetQuestionById(Guid eventId);
         Task<ServiceResponse<Guid>> CreateNewQuestion(CreateQuestionDto createQuestionDto);
         Task<ServiceResponse<bool>> UpdateQuestion(Guid id, UpdateQuestionDto questionDto);
-
+        Task<ServiceResponse<bool>> UpdateQuestionAndAnswer(Guid id, UpdateQuestionDto updateQuestionDto);
         Task<ServiceResponse<byte[]>> DownloadExcelTemplate();
         Task<ServiceResponse<string>> ImportDataFromExcel(IFormFile file);
         Task<ServiceResponse<Guid>> CreateNewQuestionAndAnswer(QuestionAndAnswerDto createQuestionDto);
         Task<ServiceResponse<bool>> DisableQuestion(Guid id);
         Task<ServiceResponse<IEnumerable<ListQuestionAndAnswer>>> GetQuestionAndAnswersAsync();
-
     }
 }

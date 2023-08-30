@@ -49,24 +49,23 @@ namespace DataAccess.Repositories.StudentRepositories
             return studentDtos;
         }
 
-        public async Task<IEnumerable<GetStudentBySchoolAndEvent>> GetStudentBySchoolIdAndEventId(Guid SchoolId, Guid eventId)
+        public async Task<IEnumerable<GetStudentBySchoolAndEvent>> GetStudentByEventSchoolId(Guid schoolEventId)
         {
-            var eventName = await _dbContext.Events.Where(x => x.Id == eventId).FirstOrDefaultAsync();
-            if(eventName != null)
-            {
-                var school = await _dbContext.SchoolEvents.Include(x => x.School).Where(x => x.SchoolId == SchoolId && x.EventId == eventId).FirstOrDefaultAsync();
-                if (school != null)
+            
+                var schoolEvent = await _dbContext.SchoolEvents.Include(x => x.Event).Include(x => x.School).Where(x => x.Id == schoolEventId).FirstOrDefaultAsync();
+                if (schoolEvent != null)
                 {
                     
-                    var students = await _dbContext.Students
+                    var students = await _dbContext.Students.Include(x => x.Player)
                                     .Include(x => x.School).ThenInclude(x => x.SchoolEvents)
-                                    .Where(s => s.SchoolId.Equals(school.SchoolId) && s.School.SchoolEvents.Any(se => se.EventId == eventId))
+                                    .Where(s => s.SchoolId == schoolEvent.SchoolId)
                                     .ToListAsync();
                     var studentDtos = students.Select(x => new GetStudentBySchoolAndEvent
                     {
                         Id = x.Id,
-                        EventName = eventName.Name,
-                        Passcode =  x.Player != null ? x.Player.Passcode : "N/A",
+                        EventId = schoolEvent.EventId,
+                        EventName = schoolEvent.Event.Name,
+                        Passcode = x.Player != null ? (x.Player.Passcode ?? "N/A") : "N/A",
                         Schoolname = x.School.Name,
                         Fullname = x.Fullname,
                         Email = x.Email,
@@ -84,12 +83,8 @@ namespace DataAccess.Repositories.StudentRepositories
                 {
                     return null;
                 }
-            }
-            else
-            {
-                return null;
-
-            }
+           
+           
         }
         public async Task<IEnumerable<GetStudentWithPlayerDto>> GetStudentsBySchoolIdAsync(Guid schoolId)
         {
@@ -135,6 +130,36 @@ namespace DataAccess.Repositories.StudentRepositories
                 student.Status = newStatus;
                 await _dbContext.SaveChangesAsync();
             }
+        }
+
+        public async Task<IEnumerable<GetStudentBySchoolAndEvent>> filterData(Guid? schoolId, Guid? eventId)
+        {
+            IQueryable<Student> query = _dbContext.Students.Include(s => s.School)
+                                                            .ThenInclude(school => school.SchoolEvents)
+                                                            .ThenInclude(schoolEvent => schoolEvent.Event)
+                                                            .Include(x => x.Player); 
+            if (schoolId.HasValue)
+            {
+                query = query.Where(s => s.SchoolId == schoolId.Value);
+            }
+            if (eventId.HasValue)
+            {
+                query = query.Where(s => s.School.SchoolEvents.Any(se => se.EventId == eventId.Value));
+            }
+
+            var result = await query.Select(s => new GetStudentBySchoolAndEvent
+            {
+                Id = s.Id,
+                Email = s.Email,
+                Fullname = s.Fullname,
+                GraduateYear =s.GraduateYear,
+                Phonenumber = s.Phonenumber,
+                Status = s.Status,
+                Classname = s.Classname,
+                Schoolname = s.School.Name,
+                Passcode = s.Player.Passcode != null ? s.Player.Passcode : "N/A",
+            }).OrderByDescending(x => x.CreatedAt).ToListAsync();
+            return result;
         }
     }
 }

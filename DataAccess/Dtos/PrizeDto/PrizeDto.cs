@@ -13,7 +13,7 @@ namespace DataAccess.Dtos.PrizeDto
 
         public string EventName { get; set; }
         public string Name { get; set; }
-        public string Decription { get; set; }
+        public string Description { get; set; }
         public string Status { get; set; }
         public int Quantity { get; set; }
         [JsonIgnore]

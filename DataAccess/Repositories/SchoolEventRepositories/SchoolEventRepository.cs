@@ -23,9 +23,9 @@ namespace DataAccess.Repositories.SchoolEventRepositories
 
         public async Task<List<GetSchoolByEventIdDto>> GetSchoolByEventId(Guid eventid)
         {
-            var schoolList = await _dbContext.SchoolEvents.Include(se => se.School).OrderByDescending(x => x.CreatedAt).Where(se => se.EventId.Equals(eventid)).Select(s => new GetSchoolByEventIdDto
+            var schoolList = await _dbContext.SchoolEvents.Include(x => x.Event).Include(se => se.School).OrderByDescending(x => x.CreatedAt).Where(se => se.EventId == eventid).Select(s => new GetSchoolByEventIdDto
             {
-                Id = s.School.Id,
+                Id = s.Id,
                 Status = s.Status,
                 ApprovalStatus = s.ApprovalStatus,
                 EndTime = s.EndTime,
@@ -41,5 +41,20 @@ namespace DataAccess.Repositories.SchoolEventRepositories
             return schoolList;
         }
 
+        public async Task<SchoolEventDto> GetSchoolByEventIdCheck(Guid schoolEventId)
+        {
+            var schoolEvent = await _dbContext.SchoolEvents
+                                .Include(x => x.Event)
+                                .Include(se => se.School)
+                                .OrderByDescending(x => x.CreatedAt)
+                                .Where(se => se.Id == schoolEventId && se.Status == "ACTIVE").FirstOrDefaultAsync();
+            
+            if(schoolEvent == null)
+            {
+                return null;
+            }
+            var schoolEventDto = _mapper.Map<SchoolEventDto>(schoolEvent);
+            return schoolEventDto;
+        }
     }
 }

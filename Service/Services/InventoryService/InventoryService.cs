@@ -34,7 +34,7 @@ namespace Service.Services.InventoryService
                     StatusCode = 400
                 };
             }
-            createInventoryDto.CreatedAt = TimeZoneVietName(createInventoryDto.CreatedAt);
+            createInventoryDto.CreatedAt = TimeZoneVietName(DateTime.UtcNow); ;
 
             var inventoryCreate = _mapper.Map<Inventory>(createInventoryDto);
             inventoryCreate.Id = Guid.NewGuid();
@@ -144,7 +144,7 @@ namespace Service.Services.InventoryService
             }
             try
             {
-                await _inventoryRepository.UpdateAsync(existingInventory);
+                await _inventoryRepository.UpdateAsync(id, existingInventory);
                 return new ServiceResponse<bool>
                 {
                     Data = true,

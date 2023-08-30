@@ -367,35 +367,65 @@ namespace DataAccess.Repositories.UserRepositories
         public async Task<BaseResponse<LoginResponseDto>> LoginUnity(LoginUnityDto loginUnityDto)
         {
             var student = await _dbContext.Students.Include(x => x.School).SingleOrDefaultAsync(u => u.Email == loginUnityDto.Email);
-            var passcode = await _dbContext.Players.Where(x => x.StudentId == student.Id).FirstOrDefaultAsync();
-            LoginResponseDto userWithToken = null;
-           
-            if (student != null && passcode != null)
+            if(student == null)
             {
-                if(loginUnityDto.Email.Equals(student.Email) && loginUnityDto.Passcode.Equals(passcode.Passcode))
+                return new BaseResponse<LoginResponseDto>
                 {
-                    var schoolEvent = await _dbContext.SchoolEvents
-                                        .Where(x => x.School.Students.Any(student => student.Id == student.Id))
-                                        .FirstOrDefaultAsync();
-                    RefreshToken refreshToken = GenerateRefreshToken();
-                    student.RefreshTokens.Add(refreshToken);
-                    await _dbContext.SaveChangesAsync();
+                    Data = null,
+                    Message = "Failed, data is null",
+                    Success = false
+                };
+            }
+            else
+            {
+                var passcode = await _dbContext.Players.Where(x => x.StudentId == student.Id).FirstOrDefaultAsync();
+                LoginResponseDto userWithToken = null;
 
-                    userWithToken = new LoginResponseDto();
-                    userWithToken.RefreshToken = refreshToken.Token;
-                    userWithToken.Token = GenerateAccessToken(student.Id);
-                    userWithToken.Nickname = passcode.Nickname;
-                    userWithToken.TotalPoint = passcode.TotalPoint;
-                    userWithToken.TotalTime = passcode.TotalTime;
-                    userWithToken.Isplayer = passcode.Isplayer;
-                    userWithToken.EventId = passcode.EventId;
-                    userWithToken.StudentId = student.Id;
-                    userWithToken.SchoolName = student.School.Name;
-                    userWithToken.SchoolId = student.School.Id;
-                   
+                if (student != null && passcode != null)
+                {
+                    if (loginUnityDto.Email.Equals(student.Email) && loginUnityDto.Passcode.Equals(passcode.Passcode))
+                    {
+                        var schoolEvent = await _dbContext.SchoolEvents.Include(x => x.School).Include(x => x.Event)
+                                            .Where(x => x.School.Id == student.School.Id)
+                                            .FirstOrDefaultAsync();
+                        RefreshToken refreshToken = GenerateRefreshToken();
+                        student.RefreshTokens.Add(refreshToken);
+                        await _dbContext.SaveChangesAsync();
 
-                    userWithToken.SchoolStatus = schoolEvent.Status;
-                    if (userWithToken == null)
+                        userWithToken = new LoginResponseDto();
+                        userWithToken.RefreshToken = refreshToken.Token;
+                        userWithToken.Token = GenerateAccessToken(student.Id);
+                        userWithToken.Nickname = passcode.Nickname;
+                        userWithToken.TotalPoint = passcode.TotalPoint;
+                        userWithToken.TotalTime = passcode.TotalTime;
+                        userWithToken.Isplayer = passcode.Isplayer;
+                        userWithToken.EventId = passcode.EventId;
+                        userWithToken.StudentId = student.Id;
+                        userWithToken.SchoolName = student.School.Name;
+                        userWithToken.SchoolId = student.School.Id;
+                        userWithToken.EventName = schoolEvent.Event.Name;
+                        userWithToken.SchoolStatus = schoolEvent.Status;
+                        if (userWithToken == null)
+                        {
+                            return new BaseResponse<LoginResponseDto>
+                            {
+                                Data = null,
+                                Message = "Failed, data is null",
+                                Success = false
+                            };
+                        }
+                        else
+                        {
+
+                            return new BaseResponse<LoginResponseDto>
+                            {
+                                Data = userWithToken,
+                                Message = "Success",
+                                Success = true
+                            };
+                        }
+                    }
+                    else
                     {
                         return new BaseResponse<LoginResponseDto>
                         {
@@ -404,16 +434,7 @@ namespace DataAccess.Repositories.UserRepositories
                             Success = false
                         };
                     }
-                    else
-                    {
 
-                        return new BaseResponse<LoginResponseDto>
-                        {
-                            Data = userWithToken,
-                            Message = "Success",
-                            Success = true
-                        };
-                    }
                 }
                 else
                 {
@@ -424,17 +445,8 @@ namespace DataAccess.Repositories.UserRepositories
                         Success = false
                     };
                 }
-              
             }
-            else
-            {
-                return new BaseResponse<LoginResponseDto>
-                {
-                    Data = null,
-                    Message = "Failed, data is null",
-                    Success = false
-                };
-            }
+          
             
         }
 

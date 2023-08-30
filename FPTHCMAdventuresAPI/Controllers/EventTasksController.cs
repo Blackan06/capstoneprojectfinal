@@ -103,7 +103,7 @@ namespace FPTHCMAdventuresAPI.Controllers
                 {
                     return BadRequest(ModelState);
                 }
-                var res = await _eventTaskService.UpdateTaskEvent(id, updateEventDto);
+                var res = await _eventTaskService.UpdateTaskEvent(id ,updateEventDto);
                 if (!res.Success)
                 {
                     return BadRequest(res);

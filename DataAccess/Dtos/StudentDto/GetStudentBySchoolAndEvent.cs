@@ -10,6 +10,7 @@ namespace DataAccess.Dtos.StudentDto
     public class GetStudentBySchoolAndEvent
     {
         public Guid Id { get; set; }
+        public Guid EventId { get; set; }
         public string EventName { get; set; }
         public string Schoolname { get; set; }
         public string Fullname { get; set; }

@@ -1,5 +1,6 @@
 ﻿using BusinessObjects.Model;
 using DataAccess.Dtos.PlayerDto;
+using DataAccess.Dtos.StudentDto;
 using DataAccess.GenericRepositories;
 using System;
 using System.Collections.Generic;
@@ -17,5 +18,7 @@ namespace DataAccess.Repositories.PlayerRepositories
         Task<Player> GetPlayerByStudentId(Guid studentId);
         Task<GetPlayerDto> GetPlayerByEventId(Guid eventId);
         Task<GetPlayerDto> GetPlayerBySchoolId(Guid schoolId);
+        Task<IEnumerable<GetPlayerWithSchoolAndEvent>> filterData(Guid? schoolId, Guid? eventId);
+
     }
 }

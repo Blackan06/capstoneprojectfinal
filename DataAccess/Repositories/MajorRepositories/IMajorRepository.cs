@@ -1,4 +1,6 @@
 ﻿using BusinessObjects.Model;
+using DataAccess.Dtos.MajorDto;
+using DataAccess.Dtos.NPCDto;
 using DataAccess.GenericRepositories;
 using System;
 using System.Collections.Generic;
@@ -10,6 +12,7 @@ namespace DataAccess.Repositories.MajorRepositories
 {
     public interface  IMajorRepository : IGenericRepository<Major>
     {
-      
+        Task<Major> GetMajorByName(string majorName);
+
     }
 }

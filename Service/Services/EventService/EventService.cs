@@ -62,7 +62,7 @@ namespace Service.Services.EventService
             }
             createEventDto.Name = createEventDto.Name.Trim();
             createEventDto.Status = createEventDto.Status.Trim();
-            createEventDto.CreatedAt = TimeZoneVietName(createEventDto.CreatedAt);
+            createEventDto.CreatedAt = TimeZoneVietName(DateTime.UtcNow);
             var eventcreate = _mapper.Map<Event>(createEventDto);
             eventcreate.Id = Guid.NewGuid();
             await _eventRepository.AddAsync(eventcreate);

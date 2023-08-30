@@ -76,7 +76,7 @@ namespace FPTHCMAdventuresAPI.Controllers
                 return StatusCode(500, "Internal server error: " + ex.Message);
             }
         }
-        [HttpPut("{id}")]
+      /*  [HttpPut("{id}")]
         public async Task<ActionResult<ServiceResponse<GetSchoolEventDto>>> UpdateSchoolEvent(Guid id, [FromBody] UpdateSchoolEventDto updateSchoolEventDto)
         {
             try
@@ -97,9 +97,10 @@ namespace FPTHCMAdventuresAPI.Controllers
 
                 return StatusCode(500, "Internal server error: " + ex.Message);
             }
-        }
-        [HttpPut("{schooleventid}")]
-        public async Task<ActionResult<ServiceResponse<GetSchoolEventDto>>> UpdateSchoolEventStartTimeAndEndTime(Guid schooleventid, [FromBody] UpdateSchoolEventDto updateSchoolEventDto)
+        }*/
+        [HttpPut]
+        [Route("Schooleventupdate/{id}")]
+        public async Task<ActionResult<ServiceResponse<GetSchoolEventDto>>> UpdateSchoolEventStartTimeAndEndTime(Guid id, [FromBody] UpdateSchoolEventDto updateSchoolEventDto)
         {
             try
             {
@@ -107,7 +108,7 @@ namespace FPTHCMAdventuresAPI.Controllers
                 {
                     return BadRequest(ModelState);
                 }
-                var res = await _schoolEventService.UpdateSchoolEventByStartTimeAndEndTime(schooleventid, updateSchoolEventDto);
+                var res = await _schoolEventService.UpdateSchoolEventByStartTimeAndEndTime(id, updateSchoolEventDto);
                 if (!res.Success)
                 {
                     return BadRequest(res);
@@ -120,13 +121,13 @@ namespace FPTHCMAdventuresAPI.Controllers
                 return StatusCode(500, "Internal server error: " + ex.Message);
             }
         }
-        [HttpGet("GetSchoolByEventId/{id}")]
+        [HttpGet("GetSchoolByEventId/{eventId}")]
 
-        public async Task<ActionResult<ServiceResponse<GetSchoolByEventIdDto>>> GetSchoolByEventId(Guid id)
+        public async Task<ActionResult<ServiceResponse<GetSchoolByEventIdDto>>> GetSchoolByEventId(Guid eventId)
         {
             try
             {
-                var res = await _schoolEventService.GetSchoolByEventId(id);
+                var res = await _schoolEventService.GetSchoolByEventId(eventId);
                 return Ok(res);
             }
             catch (Exception ex)
@@ -143,6 +144,10 @@ namespace FPTHCMAdventuresAPI.Controllers
                 return BadRequest(ModelState);
             }
             var response = await _schoolEventService.CreateNewSchoolEventList(createListschoolEvent);
+            if (!response.Success)
+            {
+                return BadRequest(response);
+            }
             return Ok(response);
         }
     }

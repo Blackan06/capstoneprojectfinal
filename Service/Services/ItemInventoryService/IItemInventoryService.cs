@@ -16,6 +16,6 @@ namespace Service.Services.ItemInventoryService
         Task<ServiceResponse<bool>> UpdateItemInventory(Guid id, UpdateItemInventoryDto ItemInventoryDto);
         Task<ServiceResponse<ItemInventoryDto>> GetItemByItemName(string itemName);
 
-        Task<ServiceResponse<GetListItemInventoryByPlayer>> getListItemInventoryByPlayer(string PlayerNickName);
+        Task<ServiceResponse<GetListItemInventoryByPlayer>> GetListItemInventoryByPlayer(string PlayerNickName);
     }
 }

@@ -12,11 +12,12 @@ namespace DataAccess.Repositories.StudentRepositories
     public interface IStudentRepositories : IGenericRepository<Student>
     {
         Task<IEnumerable<StudentDto>> GetStudentBySchoolId(Guid SchoolId);
-        Task<IEnumerable<GetStudentBySchoolAndEvent>> GetStudentBySchoolIdAndEventId(Guid SchoolId,Guid eventId);
+        Task<IEnumerable<GetStudentBySchoolAndEvent>> GetStudentByEventSchoolId(Guid schoolEventId);
         Task<List<string>> GetExistingEmails();
         Task<List<string>> GetExistingPhoneNumbers();
         Task<IEnumerable<GetStudentWithPlayerDto>> GetStudentsBySchoolIdAsync(Guid schoolId);
         Task UpdateStudentStatusAsync(Guid studentId, string newStatus);
+
     }
 }
 

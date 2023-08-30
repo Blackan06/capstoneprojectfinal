@@ -19,7 +19,7 @@ namespace Service.Services.LocationServoce
         Task<ServiceResponse<bool>> UpdateLocation(Guid id, UpdateLocationDto eventTaskDto);
         Task<ServiceResponse<byte[]>> DownloadExcelTemplate();
         Task<ServiceResponse<string>> ImportDataFromExcel(IFormFile file);
-
+        Task<ServiceResponse<IEnumerable<GetLocationDto>>> GetLocationList();
         Task<ServiceResponse<PagedResult<LocationDto>>> GetLocationWithPage(QueryParameters queryParameters);
 
         Task<ServiceResponse<bool>> DisableLocation(Guid id);

@@ -17,7 +17,6 @@ namespace FPTHCMAdventuresAPI.Controllers
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
-
     public class ItemsController : ControllerBase
     {
         private readonly IItemService _itemService;
@@ -84,7 +83,7 @@ namespace FPTHCMAdventuresAPI.Controllers
                 {
                     return BadRequest(ModelState);
                 }
-                var res = await _itemService.UpdateItem(id, updateItemDto);
+                var res = await _itemService.UpdateItem(id,updateItemDto);
                 if (!res.Success)
                 {
                     return BadRequest(res);

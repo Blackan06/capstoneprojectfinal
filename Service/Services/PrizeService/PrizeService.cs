@@ -47,7 +47,7 @@ namespace Service.Services.PrizeService
 
             createPrizeDto.Description = createPrizeDto.Description.Trim();
             createPrizeDto.Name = createPrizeDto.Name.Trim();
-            createPrizeDto.CreatedAt = TimeZoneVietName(createPrizeDto.CreatedAt);
+            createPrizeDto.CreatedAt = TimeZoneVietName(DateTime.UtcNow);
             var createPrize = _mapper.Map<Prize>(createPrizeDto);
             createPrize.Id = Guid.NewGuid();
            
@@ -176,7 +176,8 @@ namespace Service.Services.PrizeService
                 existingPrize.Quantity = updatePrizeDto.Quantity;
                 existingPrize.Description = updatePrizeDto.Description.Trim();
                 existingPrize.Name = updatePrizeDto.Name.Trim();
-                await _prizeRepository.UpdateAsync(existingPrize);
+                existingPrize.Status = updatePrizeDto.Status.Trim();
+                await _prizeRepository.UpdateAsync(id, existingPrize);
                 return new ServiceResponse<bool>
                 {
                     Data = true,
