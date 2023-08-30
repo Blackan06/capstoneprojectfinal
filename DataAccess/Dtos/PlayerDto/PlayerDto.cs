@@ -13,6 +13,7 @@ namespace DataAccess.Dtos.PlayerDto
         public Guid StudentId { get; set; }
         public Guid EventId { get; set; }
         public string StudentName { get; set; }
+        public string SchoolName { get; set; }
 
         public string StudentEmail { get; set; }
         public string EventName { get; set; }

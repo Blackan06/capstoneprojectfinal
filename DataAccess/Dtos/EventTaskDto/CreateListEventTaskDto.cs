@@ -12,8 +12,8 @@ namespace DataAccess.Dtos.EventTaskDto
     {
         public Guid EventId { get; set; }
         public List<Guid> TaskId { get; set; }
-        public TimeSpan StartTime { get; set; }
-        public TimeSpan EndTime { get; set; }
+        public string StartTime { get; set; }
+        public string EndTime { get; set; }
         public int Priority { get; set; }
         public double Point { get; set; }
         public string Status { get; set; }

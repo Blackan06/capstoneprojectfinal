@@ -14,7 +14,8 @@ namespace DataAccess.Dtos.TaskDto
         public string MajorName { get; set; }
         public Guid MajorId{ get; set; }
         public string NpcName { get; set; }
-        public string ItemName { get; set; }
+        public Guid? ItemId { get; set; }
+        public string? ItemName { get; set; }
         public string Name { get; set; }
         public double Point { get; set; }
         public string Type { get; set; }

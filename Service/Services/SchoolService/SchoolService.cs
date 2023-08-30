@@ -51,16 +51,16 @@ namespace Service.Services.SchoolService
             createSchoolDto.Address = createSchoolDto.Address.Trim();
             createSchoolDto.Name = createSchoolDto.Name.Trim();
             createSchoolDto.Email = createSchoolDto.Email.Trim();
-            createSchoolDto.CreatedAt = TimeZoneVietName(createSchoolDto.CreatedAt);
+            createSchoolDto.CreatedAt = TimeZoneVietName(DateTime.UtcNow);
 
             // Tiếp tục tiến hành tạo mới dữ liệu
-            var eventTaskcreate = _mapper.Map<School>(createSchoolDto);
-            eventTaskcreate.Id = Guid.NewGuid();
-            await _schoolRepository.AddAsync(eventTaskcreate);
+            var schoolCreate = _mapper.Map<School>(createSchoolDto);
+            schoolCreate.Id = Guid.NewGuid();
+            await _schoolRepository.AddAsync(schoolCreate);
 
             return new ServiceResponse<Guid>
             {
-                Data = eventTaskcreate.Id,
+                Data = schoolCreate.Id,
                 Message = "Successfully",
                 Success = true,
                 StatusCode = 201
@@ -153,7 +153,6 @@ namespace Service.Services.SchoolService
         {
             // Kiểm tra xem dữ liệu đã tồn tại trong cơ sở dữ liệu hay chưa
             var existingSchoolWithSameName = await _schoolRepository.ExistsAsync(s => s.Name == schoolDto.Name && s.Id != id);
-            var existingSchoolWithSameEmail = await _schoolRepository.ExistsAsync(s => s.Email == schoolDto.Email && s.Id != id);
 
             if (existingSchoolWithSameName)
             {
@@ -165,6 +164,8 @@ namespace Service.Services.SchoolService
                     StatusCode = 400
                 };
             }
+            var existingSchoolWithSameEmail = await _schoolRepository.ExistsAsync(s => s.Email == schoolDto.Email && s.Id != id);
+
             if (existingSchoolWithSameEmail)
             {
                 return new ServiceResponse<bool>
@@ -175,26 +176,14 @@ namespace Service.Services.SchoolService
                     StatusCode = 400
                 };
             }
-            var existingSchool = await _schoolRepository.GetById(id);
-
-            if (existingSchool == null)
-            {
-                return new ServiceResponse<bool>
-                {
-                    Data = false,
-                    Message = "School not found",
-                    Success = false,
-                    StatusCode = 404
-                };
-            }
             try
             {
-
+                var existingSchool = await _schoolRepository.GetById(id);
                 existingSchool.Address = schoolDto.Address.Trim();
                 existingSchool.Name = schoolDto.Name.Trim();
                 existingSchool.Email = schoolDto.Email.Trim();
                 existingSchool.Status = schoolDto.Status.Trim();
-                await _schoolRepository.UpdateAsync(existingSchool);
+                await _schoolRepository.UpdateAsync(id, existingSchool);
                 return new ServiceResponse<bool>
                 {
                     Data = true,

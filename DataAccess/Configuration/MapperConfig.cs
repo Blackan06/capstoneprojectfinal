@@ -181,10 +181,13 @@ namespace DataAccess.Configuration
             CreateMap<Player, PlayerDto>()
                             .ForMember(dest => dest.EventName, opt => opt.MapFrom(src => src.Event.Name))
                             .ForMember(dest => dest.StudentName, opt => opt.MapFrom(src => src.Student.Fullname))
-                            .ForMember(dest => dest.StudentEmail, opt => opt.MapFrom(src => src.Student.Email));
+                            .ForMember(dest => dest.StudentEmail, opt => opt.MapFrom(src => src.Student.Email))
+                            .ForMember(dest => dest.SchoolName, opt => opt.MapFrom(src => src.Student.School.Name));
             CreateMap<Player, UpdatePlayerDto>().ReverseMap();
             CreateMap<Player, CreatePlayerDto>().ReverseMap();
             CreateMap<Player, GetPlayerDto>().ReverseMap();
+            CreateMap<Player, GetPlayerWithSchoolAndEvent>().ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Student.Email))
+                                                            .ForMember(dest => dest.SchoolName, opt => opt.MapFrom(src => src.Student.School.Name));
             CreateMap<CreateListPlayerDto, Player>()
                            .ForMember(dest => dest.Id, opt => opt.MapFrom(src => Guid.NewGuid()))
                            .ForMember(dest => dest.StudentId, opt => opt.MapFrom(src => src.StudentId))

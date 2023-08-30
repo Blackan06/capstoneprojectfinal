@@ -22,9 +22,8 @@ namespace Service.Services.StudentService
         Task<ServiceResponse<bool>> DisableStudent(Guid id);
         Task<ServiceResponse<IEnumerable<StudentDto>>> GetStudentBySchoolId(Guid id);
         Task<ServiceResponse<byte[]>> DownloadExcelTemplate();
-
-        Task<ServiceResponse<string>> ImportDataFromExcel(IFormFile file, Guid SchoolId);
-        Task<ServiceResponse<IEnumerable<GetStudentBySchoolAndEvent>>> GetStudentBySchoolIdAndEventId(Guid SchoolId, Guid eventId);
+        Task<ServiceResponse<string>> ImportDataFromExcel(IFormFile file, Guid schoolEventId);
+        Task<ServiceResponse<IEnumerable<GetStudentBySchoolAndEvent>>> GetStudentByEventSchoolId(Guid schoolEventId);
 
         Task<byte[]> ExportDataToExcelStudent(Guid schoolId);
     }

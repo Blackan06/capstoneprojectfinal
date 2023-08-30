@@ -54,7 +54,7 @@ namespace FPTHCMAdventuresAPI.Controllers
         [HttpGet("iteminventory/{PlayerNickName}")]
         public async Task<ActionResult<ItemInventoryDto>> GetItemInventoryByPlayerId(string PlayerNickName)
         {
-            var eventDetail = await _itemInventoryService.getListItemInventoryByPlayer(PlayerNickName);
+            var eventDetail = await _itemInventoryService.GetListItemInventoryByPlayer(PlayerNickName);
             return Ok(eventDetail);
         }
         [HttpGet("iteminventory/byname/{itemName}")]

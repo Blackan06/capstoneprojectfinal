@@ -47,7 +47,7 @@ namespace Service.Services.PlayerPrizeService
                     StatusCode = 400
                 };
             }
-            createPlayerPrizeDto.CreatedAt = TimeZoneVietName(createPlayerPrizeDto.CreatedAt);
+            createPlayerPrizeDto.CreatedAt = TimeZoneVietName(DateTime.UtcNow);
 
             var createPlayerPrize = _mapper.Map<PlayerPrize>(createPlayerPrizeDto);
             createPlayerPrize.Id = Guid.NewGuid();
@@ -140,7 +140,7 @@ namespace Service.Services.PlayerPrizeService
             {
                 existingPlayerPrize.PrizeId = playerPrizeDto.PrizeId;
                 existingPlayerPrize.PlayerId = playerPrizeDto.PlayerId;
-                await _playerPrizeRepository.UpdateAsync(existingPlayerPrize);
+                await _playerPrizeRepository.UpdateAsync(id, existingPlayerPrize);
                 return new ServiceResponse<bool>
                 {   
                     Data = true,

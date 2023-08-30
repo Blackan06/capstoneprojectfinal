@@ -77,13 +77,13 @@ namespace FPTHCMAdventuresAPI.Controllers
             return Ok(eventDetail);
         }
         [HttpGet]
-        [Route("{schoolId}/{eventId}")]
-        public async Task<ActionResult<StudentDto>> GetStudentBySchoolIdAndEventId(Guid schoolId, Guid eventId)
+        [Route("getstudentbyeventschoolId/{eventschoolId}")]
+        public async Task<ActionResult<GetStudentBySchoolAndEvent>> GetStudentByEventSchoolId(Guid eventschoolId)
         {
-            var eventDetail = await _studentService.GetStudentBySchoolIdAndEventId(schoolId,eventId);
-            return Ok(eventDetail);
+            var schoolEvent = await _studentService.GetStudentByEventSchoolId(eventschoolId);
+            return Ok(schoolEvent);
         }
-
+      
         [HttpPost("student", Name = "CreateNewStudent")]
 
         public async Task<ActionResult<ServiceResponse<GetStudentDto>>> CreateNewStudent( CreateStudentDto studentDto)
@@ -111,7 +111,6 @@ namespace FPTHCMAdventuresAPI.Controllers
         [HttpPut("{id}")]
 
         public async Task<ActionResult<ServiceResponse<GetStudentDto>>> UpdateStudent(Guid id, [FromBody] UpdateStudentDto studentDto)
-
         {
             try
             {
@@ -133,10 +132,10 @@ namespace FPTHCMAdventuresAPI.Controllers
             }
         }
 
-        [HttpPost("student-getbyschool")]
-        public async Task<IActionResult> UploadExcel(IFormFile file,Guid schoolid)
+        [HttpPost("uploadfileexcelstudent")]
+        public async Task<IActionResult> UploadExcel(IFormFile file,Guid schooleventId)
         {
-            var serviceResponse = await _studentService.ImportDataFromExcel(file, schoolid);
+            var serviceResponse = await _studentService.ImportDataFromExcel(file, schooleventId);
 
             if (serviceResponse.Success)
             {

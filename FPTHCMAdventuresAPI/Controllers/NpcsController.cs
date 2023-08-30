@@ -77,7 +77,7 @@ namespace FPTHCMAdventuresAPI.Controllers
         }
         [HttpPut("{id}")]
 
-        public async Task<ActionResult<ServiceResponse<GetNpcDto>>> UpdateNpc(Guid id, [FromForm] UpdateNpcDto updateNpcDto)
+        public async Task<ActionResult<ServiceResponse<GetNpcDto>>> UpdateNpc(Guid id, [FromBody] UpdateNpcDto updateNpcDto)
         {
             try
             {

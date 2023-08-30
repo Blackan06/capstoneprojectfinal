@@ -68,7 +68,7 @@ namespace Service.Services.SchoolEventService
                     StatusCode = 400
                 };
             }
-            createSchoolEventDto.CreatedAt = TimeZoneVietName(createSchoolEventDto.CreatedAt);
+            createSchoolEventDto.CreatedAt = TimeZoneVietName(DateTime.UtcNow);
             var schoolEventcreate = _mapper.Map<SchoolEvent>(createSchoolEventDto);
             schoolEventcreate.Id = Guid.NewGuid();
 
@@ -277,7 +277,7 @@ namespace Service.Services.SchoolEventService
                 existingSchoolEvent.StartTime = schoolEventDto.StartTime;
                 existingSchoolEvent.EndTime = schoolEventDto.EndTime;
             
-                await _schoolEventRepository.UpdateAsync(existingSchoolEvent);
+                await _schoolEventRepository.UpdateAsync(id, existingSchoolEvent);
                 return new ServiceResponse<bool>
                 {
                     Data = true,
@@ -369,7 +369,7 @@ namespace Service.Services.SchoolEventService
                 }
                 createSchoolEventDtos.ApprovalStatus = "ACCEPT";
                 createSchoolEventDtos.Status = "ACTIVE";
-                TimeZoneVietName(createSchoolEventDtos.CreatedAt);
+                createSchoolEventDtos.CreatedAt =  TimeZoneVietName(DateTime.UtcNow);
                 var schoolEventCreate = _mapper.Map<SchoolEvent>(createSchoolEventDtos);
                 schoolEventCreate.Id = Guid.NewGuid();
                 schoolEventCreate.SchoolId = schoolId;

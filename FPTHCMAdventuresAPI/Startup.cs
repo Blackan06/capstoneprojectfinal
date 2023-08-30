@@ -154,9 +154,6 @@ namespace FPTHCMAdventuresAPI
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-                options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-
-
             })
             .AddJwtBearer(options =>
             {
@@ -172,17 +169,10 @@ namespace FPTHCMAdventuresAPI
                     ValidIssuer = Configuration["JwtSettings:Issuer"],
                     ValidAudience = Configuration["JwtSettings:Audience"],
                     ClockSkew = TimeSpan.Zero
-            };
-            }).AddCookie()
-            .AddGoogle(options =>
-            {
-                IConfigurationSection googleAuthNSection = Configuration.GetSection("Authentication:Google");
-                options.ClientId = googleAuthNSection["ClientId"];
-                options.ClientSecret = googleAuthNSection["ClientSecret"];
-                options.CallbackPath = "/signin-google";
-
+                };
             });
-        
+
+
             services.AddSwaggerGen(options => {
                 options.SwaggerDoc("v1", new OpenApiInfo { Title = "FPTHCM Adventure API", Version = "v1" });
                 options.AddSecurityDefinition(JwtBearerDefaults.AuthenticationScheme, new OpenApiSecurityScheme

@@ -4,6 +4,7 @@ using DataAccess.Configuration;
 using DataAccess.Dtos.PlayerDto;
 using DataAccess.Dtos.PlayerPrizeDto;
 using DataAccess.Dtos.SchoolEventDto;
+using DataAccess.Dtos.StudentDto;
 using DataAccess.Repositories.InventoryRepositories;
 using DataAccess.Repositories.PlayerRepositories;
 using DataAccess.Repositories.SchoolRepositories;
@@ -50,6 +51,10 @@ namespace Service.Services.PlayerService
             var existingPlayerForStudent = await _playerRepository.GetPlayerByStudentId(createPlayerDto.StudentId);
             if (existingPlayerForStudent != null &&  existingPlayerForStudent.Passcode != null)
             {
+                existingPlayerForStudent.TotalPoint = 0;
+                existingPlayerForStudent.TotalTime = 0;
+                await _playerRepository.UpdateAsync(existingPlayerForStudent.Id, existingPlayerForStudent);
+
                 await _studentRepository.UpdateStudentStatusAsync(existingPlayerForStudent.StudentId, "ACTIVE");
                 return new ServiceResponse<Guid>
                 {
@@ -62,7 +67,7 @@ namespace Service.Services.PlayerService
             else
             {
                 createPlayerDto.Nickname = "null";
-                createPlayerDto.CreatedAt = TimeZoneVietName(createPlayerDto.CreatedAt);
+                createPlayerDto.CreatedAt = TimeZoneVietName(DateTime.UtcNow);
                 createPlayerDto.TotalPoint = 0;
                 createPlayerDto.TotalTime = 0;
                 createPlayerDto.Passcode = Guid.NewGuid().ToString("N").Substring(0, 8);
@@ -110,9 +115,11 @@ namespace Service.Services.PlayerService
                     };
                 }
 
-                var passcode = Guid.NewGuid().ToString("N").Substring(0, 8);
+                int desiredLength = new Random().Next(8, 11); 
+                string guidString = Guid.NewGuid().ToString("N"); 
+                string passcode = guidString.Substring(0, desiredLength);
 
-                var player = new Player
+                var playerdto = new PlayerDto
                 {
                     StudentId = studentId,
                     Nickname = "null",
@@ -122,8 +129,9 @@ namespace Service.Services.PlayerService
                     TotalTime = 0,
                 };
 
-                listPlayerDto.CreatedAt = TimeZoneVietName(listPlayerDto.CreatedAt);
-                addedPlayerIds.Add(player.Id);
+                listPlayerDto.CreatedAt = TimeZoneVietName(DateTime.UtcNow); 
+                addedPlayerIds.Add(playerdto.Id);
+                var player = _mapper.Map<Player>(playerdto);
                 newPlayers.Add(player);
             }
 
@@ -202,7 +210,47 @@ namespace Service.Services.PlayerService
                 };
             }
         }
+        public async Task<ServiceResponse<IEnumerable<PlayerDto>>> GetPlayerWithNickName()
+        {
+            var playerList = await _playerRepository.GetAllAsync<PlayerDto>();
 
+            if (playerList != null)
+            {
+                playerList = playerList.OrderByDescending(e => e.CreatedAt).ToList();
+                var validPlayers = playerList.Where(player => !string.IsNullOrEmpty(player.Nickname)).ToList();
+
+                if (validPlayers != null)
+                {
+                    return new ServiceResponse<IEnumerable<PlayerDto>>
+                    {
+                        Data = validPlayers,
+                        Success = true,
+                        Message = "Successfully",
+                        StatusCode = 200
+                    };
+                }
+                else
+                {
+                    return new ServiceResponse<IEnumerable<PlayerDto>>
+                    {
+                        Data = playerList,
+                        Success = false,
+                        Message = "Faile because List event null",
+                        StatusCode = 200
+                    };
+                }
+            }
+            else
+            {
+                return new ServiceResponse<IEnumerable<PlayerDto>>
+                {
+                    Data = playerList,
+                    Success = false,
+                    Message = "Faile because List event null",
+                    StatusCode = 200
+                };
+            }
+        }
         public async Task<ServiceResponse<GetPlayerDto>> GetPlayerById(Guid eventId)
         {
             try
@@ -272,7 +320,7 @@ namespace Service.Services.PlayerService
         }
 
      
-
+        
         public async Task<ServiceResponse<bool>> UpdatePlayer(Guid id, UpdatePlayerDto updatePlayerDto)
         {
             if (await _playerRepository.ExistsAsync(s => s.Nickname == updatePlayerDto.Nickname && s.Id != id))
@@ -322,7 +370,7 @@ namespace Service.Services.PlayerService
                 existingPlayer.TotalTime = updatePlayerDto.TotalTime;
                 existingPlayer.Isplayer = updatePlayerDto.IsPlayer;
 
-                await _playerRepository.UpdateAsync(existingPlayer);
+                await _playerRepository.UpdateAsync(id, existingPlayer);
 
                 return new ServiceResponse<bool>
                 {
@@ -419,7 +467,7 @@ namespace Service.Services.PlayerService
             {
                 var schoolId = await _playerRepository.GetSchoolByPlayerId(playerId);
 
-                if (schoolId == null)
+                if (schoolId == Guid.Empty)
                 {
 
                     return new ServiceResponse<Guid>
@@ -467,7 +515,27 @@ namespace Service.Services.PlayerService
                 };
             }
         }
-
+        public async Task<ServiceResponse<IEnumerable<GetPlayerWithSchoolAndEvent>>> filterData(Guid? schoolId, Guid? eventId)
+        {
+            var listStudentFilterData = await _playerRepository.filterData(schoolId, eventId);
+            if (listStudentFilterData == null)
+            {
+                return new ServiceResponse<IEnumerable<GetPlayerWithSchoolAndEvent>>
+                {
+                    Data = null,
+                    Message = "DATA NULL",
+                    StatusCode = 200,
+                    Success = false
+                };
+            }
+            return new ServiceResponse<IEnumerable<GetPlayerWithSchoolAndEvent>>
+            {
+                Data = listStudentFilterData,
+                Message = "Successfully",
+                StatusCode = 200,
+                Success = false
+            };
+        }
         public async Task<ServiceResponse<GetPlayerDto>> GetPlayerBySchoolId(Guid schoolId)
         {
             var player = await _playerRepository.GetPlayerBySchoolId(schoolId);

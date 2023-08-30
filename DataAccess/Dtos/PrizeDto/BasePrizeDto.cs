@@ -11,7 +11,7 @@ namespace DataAccess.Dtos.PrizeDto
         private string description;
         private string status;
         private int quantity;
-        private DateTime createdAt;
+        private DateTime? createdAt;
 
         [Required]
         public Guid EventId
@@ -50,7 +50,7 @@ namespace DataAccess.Dtos.PrizeDto
 
         [JsonIgnore]
 
-        public DateTime CreatedAt
+        public DateTime? CreatedAt
         {
             get { return createdAt; }
             set { createdAt = value; }

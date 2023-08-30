@@ -9,6 +9,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using Task = System.Threading.Tasks.Task;
 
 namespace DataAccess.GenericRepositories
@@ -232,6 +233,15 @@ namespace DataAccess.GenericRepositories
         {
             _dbContext.Entry(entity).State = EntityState.Modified;
             await _dbContext.SaveChangesAsync();
+            if (_dbContext.Entry(entity).State == EntityState.Modified)
+            {
+                var entityEntry = _dbContext.Entry(entity);
+                if (entityEntry.Entity != null)
+                {
+                    _dbContext.Set<T>().Local.Remove(entity);
+                    _dbContext.Set<T>().Local.Add(entityEntry.Entity);
+                }
+            }
         }
 
         public async Task UpdateAsync<TSource>(Guid id, TSource source) where TSource : class

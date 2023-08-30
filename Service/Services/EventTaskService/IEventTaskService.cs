@@ -17,7 +17,7 @@ namespace Service.Services.EventTaskService
         Task<ServiceResponse<EventTaskDto>> GetEventTaskByTaskId(Guid taskId);
 
         Task<ServiceResponse<Guid>> CreateNewEventTask(CreateEventTaskDto createEventTaskDto);
-        Task<ServiceResponse<bool>> UpdateTaskEvent(Guid id, UpdateEventTaskDto eventTaskDto);
+        Task<ServiceResponse<bool>> UpdateTaskEvent(Guid id,UpdateEventTaskDto eventTaskDto);
 
         Task<ServiceResponse<IEnumerable<GetTaskByEventIdDto>>> GetTaskByEventTaskWithEventId(Guid eventId);
         Task<ServiceResponse<List<Guid>>> CreateNewEventTasks(CreateListEventTaskDto createEventTaskDtos);

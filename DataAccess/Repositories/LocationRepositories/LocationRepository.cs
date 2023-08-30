@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
 using BusinessObjects.Model;
+using DataAccess.Dtos.LocationDto;
 using DataAccess.GenericRepositories;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,6 +22,23 @@ namespace DataAccess.Repositories.LocationRepositories
             _mapper = mapper;
         }
 
+        public async Task<Location> GetLocationByName(string locationName)
+        {
+            var location = await _dbContext.Locations.FirstOrDefaultAsync(x => x.LocationName.Trim() == locationName.Trim());
+            return location;
+        }
 
+        public async Task<IEnumerable<GetLocationDto>> GetLocationListNPC()
+        {
+            var listLocation = await _dbContext.Locations.Where(x => x.Status.Equals("ACTIVE") && x.LocationName.Contains("NPC")).ToListAsync();
+            if (listLocation == null)
+            {
+                return null;
+
+            }
+            var listLocationNpc = _mapper.Map<IEnumerable<GetLocationDto>>(listLocation);
+            return listLocationNpc;
+
+        }
     }
 }

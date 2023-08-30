@@ -6,6 +6,7 @@ using DataAccess.Dtos.InventoryDto;
 using DataAccess.Dtos.ItemInventoryDto;
 using DataAccess.Repositories.InventoryRepositories;
 using DataAccess.Repositories.ItemInventoryRepositories;
+using DataAccess.Repositories.ItemRepositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
@@ -19,6 +20,7 @@ namespace Service.Services.ItemInventoryService
     public class ItemInventoryService : IItemInventoryService
     {
         private readonly IItemInventoryRepositories _itemInventoryRepository;
+ 
         private readonly IMapper _mapper;
        
         public ItemInventoryService(IItemInventoryRepositories itemInventoryRepository, IMapper mapper)
@@ -28,18 +30,35 @@ namespace Service.Services.ItemInventoryService
         }
         public async Task<ServiceResponse<Guid>> CreateNewItemInventory(CreateItemInventoryDto createItemInventoryDto)
         {
-            createItemInventoryDto.CreatedAt = TimeZoneVietName(createItemInventoryDto.CreatedAt);
-            var itemInventoryCreate = _mapper.Map<ItemInventory>(createItemInventoryDto);
-            itemInventoryCreate.Id = Guid.NewGuid();
-            await _itemInventoryRepository.AddAsync(itemInventoryCreate);
-
-            return new ServiceResponse<Guid>
+            var checkExist = await _itemInventoryRepository.GetByItemId(createItemInventoryDto.ItemId, createItemInventoryDto.InventoryId);
+            if (checkExist == null)
             {
-                Data = itemInventoryCreate.Id,
-                Message = "Successfully",
-                Success = true,
-                StatusCode = 201
-            };
+                createItemInventoryDto.CreatedAt = TimeZoneVietName(DateTime.UtcNow);
+                var itemInventoryCreate = _mapper.Map<ItemInventory>(createItemInventoryDto);
+                itemInventoryCreate.Id = Guid.NewGuid();
+                await _itemInventoryRepository.AddAsync(itemInventoryCreate);
+                return new ServiceResponse<Guid>
+                {
+                    Data = itemInventoryCreate.Id,
+                    Message = "Successfully",
+                    Success = true,
+                    StatusCode = 201
+                };
+            }
+            else
+            {
+                checkExist.Quantity += 1;
+                await _itemInventoryRepository.UpdateAsync(checkExist.Id, checkExist);
+                return new ServiceResponse<Guid>
+                {
+                    Message = "Successfully",
+                    Success = true,
+                    StatusCode = 201
+                };
+            }
+
+
+
         }
 
         public async Task<ServiceResponse<ItemInventoryDto>> GetItemByItemName(string itemName)
@@ -126,7 +145,7 @@ namespace Service.Services.ItemInventoryService
             }
         }
 
-        public async Task<ServiceResponse<GetListItemInventoryByPlayer>> getListItemInventoryByPlayer(string PlayerNickName)
+        public async Task<ServiceResponse<GetListItemInventoryByPlayer>> GetListItemInventoryByPlayer(string PlayerNickName)
         {
             try
             {
@@ -185,7 +204,7 @@ namespace Service.Services.ItemInventoryService
             try
             {
                 existingItemInventory.Quantity = ItemInventoryDto.Quantity;
-                await _itemInventoryRepository.UpdateAsync(existingItemInventory);
+                await _itemInventoryRepository.UpdateAsync(id, existingItemInventory);
                 return new ServiceResponse<bool>
                 {
                     Data = true,

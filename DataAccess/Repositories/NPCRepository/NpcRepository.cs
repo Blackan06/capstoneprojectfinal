@@ -28,5 +28,10 @@ namespace DataAccess.Repositories.NPCRepository
             return _mapper.Map<NpcDto>(npc);
         }
 
+        public async Task<Npc> GetNpcDTOByName(string npcName)
+        {
+            var npc = await _dbContext.Npcs.FirstOrDefaultAsync(x => x.Name.Trim() == npcName.Trim());
+            return npc;
+        }
     }
 }

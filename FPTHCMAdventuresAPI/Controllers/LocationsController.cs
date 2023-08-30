@@ -49,6 +49,20 @@ namespace FPTHCMAdventuresAPI.Controllers
                 return StatusCode(500, "Internal server error: " + ex.Message);
             }
         }
+        [HttpGet]
+        [Route("GetLocationListWithNPC")]
+        public async Task<ActionResult<ServiceResponse<GetLocationDto>>> GetLocationListWithNPC()
+        {
+            try
+            {
+                var res = await _locationService.GetLocationList();
+                return Ok(res);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Internal server error: " + ex.Message);
+            }
+        }
         [HttpGet("location/pagination", Name = "GetLocationListWithPagination")]
 
         public async Task<ActionResult<ServiceResponse<LocationDto>>> GetLocationListWithPage([FromQuery] QueryParameters queryParameters)

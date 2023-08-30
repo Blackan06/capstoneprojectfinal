@@ -13,5 +13,7 @@ namespace DataAccess.Repositories.ItemInventoryRepositories
     {
         Task<GetListItemInventoryByPlayer> GetListItemInventoryByPlayer(string PlayerNickName);
         Task<ItemInventoryDto> getItemByItemName(string itemName);
+
+        Task<ItemInventory> GetByItemId(Guid itemId, Guid inventoryId);
     }
 }

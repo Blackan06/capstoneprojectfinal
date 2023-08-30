@@ -25,6 +25,16 @@ namespace DataAccess.Repositories.ItemInventoryRepositories
             _mapper = mapper;
         }
 
+        public async Task<ItemInventory> GetByItemId(Guid itemId, Guid inventoryId)
+        {
+            var getItemInventoryById = await _dbContext.ItemInventories.FirstOrDefaultAsync(x => x.ItemId == itemId && x.InventoryId == inventoryId);
+            if(getItemInventoryById == null)
+            {
+                return null;
+            }
+            return getItemInventoryById;
+        }
+
         public async Task<ItemInventoryDto> getItemByItemName(string itemName)
         {
             var getItemByName = await _dbContext.ItemInventories

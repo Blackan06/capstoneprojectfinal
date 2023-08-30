@@ -23,7 +23,6 @@ namespace XavalorAdventuresAPI.Controllers
 {   
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
 
     public class EventsController : ControllerBase
     {
@@ -59,7 +58,8 @@ namespace XavalorAdventuresAPI.Controllers
             var eventDetail = await _eventService.GetEventById(id);
             return Ok(eventDetail);
         }
-     
+
+        [Authorize]
 
         [HttpPost("event", Name = "CreateNewEvent")]
 
@@ -85,6 +85,8 @@ namespace XavalorAdventuresAPI.Controllers
                 return StatusCode(500, "Internal server error: " + ex.Message);
             }
         }
+        [Authorize]
+
         [HttpPut("{id}")]
 
         public async Task<ActionResult<ServiceResponse<GetEventDto>>> UpdateNewEvent(Guid id, [FromBody] UpdateEventDto eventDto)
@@ -137,6 +139,8 @@ namespace XavalorAdventuresAPI.Controllers
                 return StatusCode(500, "Internal server error: " + ex.Message);
             }
         }
+        [Authorize]
+
         [HttpPost("upload-excel-event")]
         public async Task<IActionResult> UploadExcel(IFormFile file)
         {
@@ -153,6 +157,8 @@ namespace XavalorAdventuresAPI.Controllers
                 return BadRequest(serviceResponse.Message);
             }
         }
+        [Authorize]
+
         [HttpDelete("disableevent")]
         public async Task<ActionResult<ServiceResponse<GetTaskAndEventDto>>> DisableStatusEvent(Guid id)
         {
@@ -167,6 +173,8 @@ namespace XavalorAdventuresAPI.Controllers
             }
 
         }
+        [Authorize]
+
         [HttpGet("excel-template-event")]
         public async Task<IActionResult> DownloadExcelTemplate()
         {

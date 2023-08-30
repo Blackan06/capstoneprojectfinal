@@ -13,6 +13,7 @@ namespace DataAccess.Repositories.NPCRepository
     {
         Task<NpcDto> GetNpcByName(string npcName);
 
+        Task<Npc> GetNpcDTOByName(string npcName);
 
     }
 }

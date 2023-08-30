@@ -16,7 +16,6 @@ namespace FPTHCMAdventuresAPI.Controllers
 
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
 
     public class SchoolsController : ControllerBase
     {
@@ -29,6 +28,7 @@ namespace FPTHCMAdventuresAPI.Controllers
             _schoolService = schoolService;
         }
 
+        [Authorize]
 
         [HttpGet(Name = "GetSchool")]
 
@@ -44,7 +44,8 @@ namespace FPTHCMAdventuresAPI.Controllers
                 return StatusCode(500, "Internal server error: " + ex.Message);
             }
         }
-      
+        [Authorize]
+
         [HttpGet("GetSchoolByName")]
 
         public async Task<ActionResult<ServiceResponse<BusinessObjects.Model.School>>> GetSchoolByName(string name)
@@ -59,6 +60,8 @@ namespace FPTHCMAdventuresAPI.Controllers
                 return StatusCode(500, "Internal server error: " + ex.Message);
             }
         }
+        [Authorize]
+
         [HttpGet("school/pagination", Name = "GetSchoolListWithPagination")]
 
         public async Task<ActionResult<ServiceResponse<SchoolDto>>> GetLocationListWithPage([FromQuery] QueryParameters queryParameters)
@@ -73,6 +76,8 @@ namespace FPTHCMAdventuresAPI.Controllers
                 return StatusCode(500, "Internal server error: " + ex.Message);
             }
         }
+        [Authorize]
+
         [HttpGet("{id}")]
         public async Task<ActionResult<SchoolDto>> GetSchoolById(Guid id)
         {

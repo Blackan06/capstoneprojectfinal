@@ -45,7 +45,7 @@ namespace Service.Services.LocationServoce
                 };
             }
 
-            createLocationDto.CreatedAt = TimeZoneVietName(createLocationDto.CreatedAt);
+            createLocationDto.CreatedAt = TimeZoneVietName(DateTime.UtcNow);
             createLocationDto.LocationName = createLocationDto.LocationName.Trim();
 
             var createLocation = _mapper.Map<Location>(createLocationDto);
@@ -157,7 +157,7 @@ namespace Service.Services.LocationServoce
             try
             {
                 existingLocation.Status = updateLocationDto.Status.Trim();
-                await _locationRepository.UpdateAsync(existingLocation);
+                await _locationRepository.UpdateAsync(id, existingLocation);
                 return new ServiceResponse<bool>
                 {
                     Data = true,
@@ -212,6 +212,7 @@ namespace Service.Services.LocationServoce
                     StatusCode = 400
                 };
             }
+
             try
             {
                 using (var stream = new MemoryStream())
@@ -230,40 +231,54 @@ namespace Service.Services.LocationServoce
                                 StatusCode = 400
                             };
                         }
-                        else
+
+                        var rowCount = worksheet.Dimension.Rows;
+                        var dataList = new List<LocationDto>();
+                        var errorMessages = new List<string>();
+                        for (int row = 2; row <= rowCount - 1; row++)
                         {
-                            var rowCount = worksheet.Dimension.Rows;
-                            var dataList = new List<LocationDto>();
-                            var errorMessages = new List<string>();
-                            for (int row = 2; row <= rowCount-1; row++)
+                            var data = new LocationDto
                             {
-                                var data = new LocationDto
-                                {
-                                    Id = Guid.NewGuid(),
-                                    X = Convert.ToDouble(worksheet.Cells[row, 1].Value),
-                                    Y = Convert.ToDouble(worksheet.Cells[row, 2].Value),
-                                    Z = Convert.ToDouble(worksheet.Cells[row, 3].Value),
-                                    LocationName = worksheet.Cells[row, 4].Value.ToString().Trim(),
-                                    Status = worksheet.Cells[row, 5].Value.ToString().Trim()
-                                };
-                                data.CreatedAt = TimeZoneVietName(data.CreatedAt);
+                                Id = Guid.NewGuid(),
+                                X = Convert.ToDouble(worksheet.Cells[row, 1].Value),
+                                Y = Convert.ToDouble(worksheet.Cells[row, 2].Value),
+                                Z = Convert.ToDouble(worksheet.Cells[row, 3].Value),
+                                LocationName = worksheet.Cells[row, 4].Value.ToString().Trim(),
+                                Status = worksheet.Cells[row, 5].Value.ToString().Trim()
+                            };
+                            data.CreatedAt = TimeZoneVietName(data.CreatedAt);
 
-                                if (string.IsNullOrEmpty(data.LocationName))
-                                {
-                                    errorMessages.Add($"Row {row}: Fullname is required.");
-                                }
-                                dataList.Add(data);
+                            if (string.IsNullOrEmpty(data.LocationName))
+                            {
+                                errorMessages.Add($"Row {row}: Fullname is required.");
                             }
-                            
-                            // Start from row 2 to skip the header row
-                            
-                            var locations = _mapper.Map<List<Location>>(dataList);
-                            await _locationRepository.AddRangeAsync(locations);
-                            await _locationRepository.SaveChangesAsync();
-
+                            dataList.Add(data);
                         }
+
+                        // Kiểm tra tên cột
+                        var headerRow = worksheet.Cells[1, 1, 1, worksheet.Dimension.Columns];
+                        var expectedHeaders = new List<string> { "X", "Y", "Z", "LocationName", "Status" };
+                        foreach (var cell in headerRow)
+                        {
+                            if (!expectedHeaders.Contains(cell.Text))
+                            {
+                                return new ServiceResponse<string>
+                                {
+                                    Data = null,
+                                    Message = "Excel file headers do not match the expected format.",
+                                    Success = false,
+                                    StatusCode = 400
+                                };
+                            }
+                        }
+
+                        // Tiếp tục xử lý dữ liệu
+                        var locations = _mapper.Map<List<Location>>(dataList);
+                        await _locationRepository.AddRangeAsync(locations);
+                        await _locationRepository.SaveChangesAsync();
                     }
                 }
+
                 return new ServiceResponse<string>
                 {
                     Data = "Upload successful.",
@@ -282,6 +297,7 @@ namespace Service.Services.LocationServoce
                 };
             }
         }
+
         public async Task<byte[]> ExportDataToExcel()
         {
             var dataList = await _locationRepository.GetAllAsync<GetLocationDto>(); // Replace with your repository method to get all locations
@@ -397,6 +413,34 @@ namespace Service.Services.LocationServoce
                     Message = "Success",
                     StatusCode = 200,
                     Success = true
+                };
+            }
+        }
+
+        public async Task<ServiceResponse<IEnumerable<GetLocationDto>>> GetLocationList()
+        {
+            var locationList = await _locationRepository.GetLocationListNPC();
+
+            if (locationList != null)
+            {
+                locationList = locationList.OrderByDescending(e => e.CreatedAt).ToList();
+
+                return new ServiceResponse<IEnumerable<GetLocationDto>>
+                {
+                    Data = locationList,
+                    Success = true,
+                    Message = "Successfully",
+                    StatusCode = 200
+                };
+            }
+            else
+            {
+                return new ServiceResponse<IEnumerable<GetLocationDto>>
+                {
+                    Data = locationList,
+                    Success = false,
+                    Message = "Faile because List event null",
+                    StatusCode = 200
                 };
             }
         }

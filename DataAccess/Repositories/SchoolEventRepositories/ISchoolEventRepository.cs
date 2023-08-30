@@ -13,6 +13,7 @@ namespace DataAccess.Repositories.SchoolEventRepositories
     public interface ISchoolEventRepository : IGenericRepository<SchoolEvent>
     {
         Task<List<GetSchoolByEventIdDto>> GetSchoolByEventId(Guid eventid);
+        Task<SchoolEventDto> GetSchoolByEventIdCheck(Guid eventid);
 
     }
 }

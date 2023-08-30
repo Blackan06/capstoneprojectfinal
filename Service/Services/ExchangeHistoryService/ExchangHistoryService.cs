@@ -28,7 +28,7 @@ namespace Service.Services.ExchangeHistoryService
         }
         public async Task<ServiceResponse<Guid>> CreateNewExchangeHistory(CreateExchangeHistoryDto createExchangeHistoryDto)
         {
-            createExchangeHistoryDto.CreatedAt = TimeZoneVietName(createExchangeHistoryDto.CreatedAt);
+            createExchangeHistoryDto.CreatedAt = TimeZoneVietName(DateTime.UtcNow); 
             createExchangeHistoryDto.ExchangeDate = TimeZoneVietName(DateTime.UtcNow);
             createExchangeHistoryDto.Status = "SUCCESS";
             var exchangeHistoryCreate = _mapper.Map<ExchangeHistory>(createExchangeHistoryDto);
@@ -159,9 +159,10 @@ namespace Service.Services.ExchangeHistoryService
                         StatusCode = 404
                     };
                 }
+                existingExchangeHistory.PlayerId = exchangeHistoryDto.PlayerId;
+                existingExchangeHistory.ItemId = exchangeHistoryDto.ItemId;
                 existingExchangeHistory.Quantity = exchangeHistoryDto.Quantity;
-                existingExchangeHistory.Status = exchangeHistoryDto.Status;
-                await _exchangeHistoryRepository.UpdateAsync(existingExchangeHistory);
+                await _exchangeHistoryRepository.UpdateAsync(id, existingExchangeHistory);
                 return new ServiceResponse<bool>
                 {   
                     Data = true,

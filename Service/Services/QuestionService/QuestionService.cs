@@ -11,14 +11,17 @@ using DataAccess.Repositories.MajorRepositories;
 using DataAccess.Repositories.QuestionRepositories;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using OfficeOpenXml;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Model;
 
 namespace Service.Services.QuestionService
 {
@@ -28,7 +31,7 @@ namespace Service.Services.QuestionService
         private readonly IAnswerRepository _answerRepository;
         private readonly IMajorRepository _majorRepository;
         private readonly IMapper _mapper;
-     
+
         public QuestionService(IQuestionRepository questionRepository, IMapper mapper, IMajorRepository majorRepository, IAnswerRepository answerRepository)
         {
             _questionRepository = questionRepository;
@@ -134,11 +137,11 @@ namespace Service.Services.QuestionService
                 answer.Id = Guid.NewGuid();
                 answer.QuestionId = question.Id;
                 answer.AnswerName = answerText.AnswerName;
-                answer.IsRight = isFirstAnswer && answerText.IsRight; 
-            
+                answer.IsRight = isFirstAnswer && answerText.IsRight;
+
                 await _answerRepository.AddAsync(answer);
-                
-                isFirstAnswer = false; 
+
+                isFirstAnswer = false;
 
             }
 
@@ -167,7 +170,7 @@ namespace Service.Services.QuestionService
         {
             var majorList = await _questionRepository.GetAllAsync<QuestionDto>();
 
-            
+
             if (majorList != null)
             {
                 return new ServiceResponse<IEnumerable<QuestionDto>>
@@ -196,7 +199,7 @@ namespace Service.Services.QuestionService
             {
 
                 var eventDetail = await _questionRepository.GetAsync<QuestionDto>(eventId);
-               
+
                 if (eventDetail == null)
                 {
 
@@ -221,7 +224,7 @@ namespace Service.Services.QuestionService
                 throw new Exception(ex.Message);
             }
         }
-       
+
 
         public async Task<ServiceResponse<bool>> UpdateQuestion(Guid id, UpdateQuestionDto updateQuestionDto)
         {
@@ -272,36 +275,6 @@ namespace Service.Services.QuestionService
 
         public async Task<ServiceResponse<string>> ImportDataFromExcel(IFormFile file)
         {
-            Dictionary<string, Guid?> majorDictionary = new Dictionary<string, Guid?>();
-
-            var majors = await _majorRepository.GetAllAsync<GetMajorDto>();
-
-            foreach (var major in majors)
-            {
-                majorDictionary.Add(major.Name, major.Id);
-            }
-
-            if (file == null || file.Length <= 0)
-            {
-                return new ServiceResponse<string>
-                {
-                    Data = null,
-                    Message = "No file uploaded.",
-                    Success = false,
-                    StatusCode = 400
-                };
-            }
-
-            if (file.ContentType != "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-            {
-                return new ServiceResponse<string>
-                {
-                    Data = null,
-                    Message = "Invalid file format. Only Excel files are allowed.",
-                    Success = false,
-                    StatusCode = 400
-                };
-            }
             try
             {
                 using (var stream = new MemoryStream())
@@ -310,88 +283,184 @@ namespace Service.Services.QuestionService
                     using (var package = new ExcelPackage(stream))
                     {
                         var worksheet = package.Workbook.Worksheets.FirstOrDefault();
-                        if (worksheet != null)
+                        if (worksheet == null || worksheet.Dimension == null || worksheet.Dimension.Rows <= 1)
                         {
-                            var rowCount = worksheet.Dimension.Rows;
-                            var dataList = new List<QuestionDto>();
-
-                            for (int row = 2; row <= rowCount; row++)
+                            return new ServiceResponse<string>
                             {
-                                var data = new QuestionDto
+                                Data = null,
+                                Message = "Excel file does not contain data starting from row 2.",
+                                Success = false,
+                                StatusCode = 400
+                            };
+                        }
+
+                        var rowCount = worksheet.Dimension.Rows;
+                        var questionsWithAnswers = new List<(GetQuestionDto question, List<GetAnswerDto> answers)>();
+                        var headerRow = worksheet.Cells[1, 1, 1, worksheet.Dimension.Columns];
+                        var expectedHeaders = new List<string>
+                            {
+                                "Question Name", "Major Name","Answer A","Is Correct","Answer B","Is Correct","Answer C","Is Correct","Answer D","Is Correct"
+                            };
+
+                        // Kiểm tra tên cột trong tệp Excel
+                        foreach (var cell in headerRow)
+                        {
+                            if (!expectedHeaders.Contains(cell.Text.Trim()))
+                            {
+                                return new ServiceResponse<string>
                                 {
-                                    Id = Guid.NewGuid(),
-                                    Name = worksheet.Cells[row, 1].Value.ToString(),
-                                    MajorName = worksheet.Cells[row, 2].Value.ToString(),
-
+                                    Data = null,
+                                    Message = "Invalid column names in the Excel file.",
+                                    Success = false,
+                                    StatusCode = 400
                                 };
-
-                                dataList.Add(data);
+                            }
+                        }
+                        for (int row = 2; row <= rowCount; row++)
+                        {
+                            var questionName = worksheet.Cells[row, 1].Value?.ToString();
+                            var majorName = worksheet.Cells[row, 2].Value?.ToString();
+                            var major = await _majorRepository.GetMajorByName(majorName);
+                            if (string.IsNullOrWhiteSpace(questionName))
+                            {
+                                // Skip rows with empty question names
+                                continue;
                             }
 
-                            // Start from row 2 to skip the header row
+                            var question = new GetQuestionDto
+                            {
+                                Id = Guid.NewGuid(),
+                                Name = questionName,
+                                MajorId = major.Id,
+                                Status = "ACTIVE",
+                                CreatedAt = TimeZoneVietName(DateTime.UtcNow),
+                            };
 
-                            var locations = _mapper.Map<List<Question>>(dataList);
-                            await _questionRepository.AddRangeAsync(locations);
-                            await _questionRepository.SaveChangesAsync();
+                            var answers = new List<GetAnswerDto>();
 
+                            for (int col = 3; col <= 10; col += 2)
+                            {
+                                var answerName = worksheet.Cells[row, col].Value?.ToString();
+                                var isCorrectText = worksheet.Cells[row, col + 1].Value?.ToString()?.ToLower();
+
+                                if (!string.IsNullOrWhiteSpace(answerName) && !string.IsNullOrWhiteSpace(isCorrectText))
+                                {
+                                    bool isCorrect = isCorrectText == "true";
+                                    var answer = new GetAnswerDto
+                                    {
+                                        Id = Guid.NewGuid(),
+                                        AnswerName = answerName,
+                                        IsRight = isCorrect,
+                                        QuestionId = question.Id,
+                                        CreatedAt = TimeZoneVietName(DateTime.UtcNow)
+                                    };
+                                    answers.Add(answer);
+                                }
+                            }
+                            if (answers.Count(answer => answer.IsRight) > 1)
+                            {
+                                return new ServiceResponse<string>
+                                {
+                                    Data = null,
+                                    Message = "Multiple correct answers found for a question.",
+                                    Success = false,
+                                    StatusCode = 400
+                                };
+                            }
+
+                            if (answers.Any())
+                            {
+                                questionsWithAnswers.Add((question, answers));
+                            }
                         }
+
+                        foreach (var (question, answers) in questionsWithAnswers)
+                        {
+                            // Save question and its answers to the database
+                            var questionEntity = _mapper.Map<Question>(question);
+                            await _questionRepository.AddAsync(questionEntity);
+
+                            var answerEntities = _mapper.Map<List<Answer>>(answers);
+                            foreach (var answerEntity in answerEntities)
+                            {
+                                answerEntity.QuestionId = questionEntity.Id;
+                            }
+
+                            await _answerRepository.AddRangeAsync(answerEntities);
+                        }
+
+                        await _answerRepository.SaveChangesAsync();
+                        await _questionRepository.SaveChangesAsync();
+
+                        return new ServiceResponse<string>
+                        {
+                            Data = "Upload successful.",
+                            Success = true,
+                            StatusCode = 200
+                        };
                     }
                 }
-                return new ServiceResponse<string>
-                {
-                    Data = "Upload successful.",
-                    Success = true,
-                    StatusCode = 200
-                };
             }
             catch (Exception ex)
             {
                 return new ServiceResponse<string>
                 {
-                    Data = null,
+                    Data = ex.Message,
                     Message = "Failed to process uploaded file.",
                     Success = false,
                     StatusCode = 500
                 };
             }
         }
+
+
         public byte[] GenerateExcelTemplate(List<GetMajorDto> majors)
         {
             using (var package = new ExcelPackage())
             {
-                var worksheet = package.Workbook.Worksheets.Add("SampleDataQuestion");
+                var worksheet = package.Workbook.Worksheets.Add("QuestionAndAnswerTemplate");
 
                 // Thiết lập header cho các cột
                 worksheet.Cells[1, 1].Value = "Question Name";
                 worksheet.Cells[1, 2].Value = "Major Name";
-
-                // Điền dữ liệu Major vào tệp Excel
-               
-                
-                var majorNameColumn = worksheet.Cells[2, 2, majors.Count + 1, 2];
-                var validation = majorNameColumn.DataValidation.AddListDataValidation();
-                validation.Formula.ExcelFormula = $"=MajorList";
-
-                // Tạo Name Range cho danh sách Major Name
-                var majorListRange = worksheet.Names.Add("MajorList", worksheet.Cells[2, 2, majors.Count + 1, 2]);
-
-                // Thiết lập công thức để trích xuất danh sách Major Name
-                majorListRange.Formula = $"='{worksheet.Name}'!$B$2:$B${majors.Count + 1}";
-
-                // Đặt các tên tương ứng với danh sách Major Name
-                for (int i = 0; i < majors.Count; i++)
+                worksheet.Cells[1, 3].Value = "Answer A";
+                worksheet.Cells[1, 4].Value = "Is Correct";
+                worksheet.Cells[1, 5].Value = "Answer B";
+                worksheet.Cells[1, 6].Value = "Is Correct";
+                worksheet.Cells[1, 7].Value = "Answer C";
+                worksheet.Cells[1, 8].Value = "Is Correct";
+                worksheet.Cells[1, 9].Value = "Answer D";
+                worksheet.Cells[1, 10].Value = "Is Correct";
+                for (int col = 4; col <= 10; col += 2)
                 {
-                    var majorCell = worksheet.Cells[i + 2, 2];
-                    majorCell.Value = majors[i].Name;
+                    var isCorrectColumn = worksheet.Cells[2, col, majors.Count + 1, col];
+                    var isCorrectValidation = isCorrectColumn.DataValidation.AddListDataValidation();
+                    isCorrectValidation.Formula.Values.Add("TRUE");
+                    isCorrectValidation.Formula.Values.Add("FALSE");
+                    isCorrectValidation.HideDropDown = false;
+                    isCorrectValidation.Prompt = "Choose an option from the list";
                 }
+                var majorNames = majors.Select(major => major.Name).ToList();
 
-                // Lưu file Excel vào MemoryStream
+                // Tạo dropdown list cho cột Major Name
+                var majorNameColumn = worksheet.Cells[2, 2, majors.Count + 1, 2];
+                var majorValidation = majorNameColumn.DataValidation.AddListDataValidation();
+                foreach (var option in majorNames)
+                {
+                    majorValidation.Formula.Values.Add(option); // Replace with the appropriate property
+                }
+                // Tạo công thức danh sách từ danh sách tên chuyên ngành
+
+                majorValidation.HideDropDown = false; // Hiển thị dropdown
+                majorValidation.Prompt = "Choose a major from the list";
+
+                // Save the Excel package to a stream
                 var stream = new MemoryStream(package.GetAsByteArray());
                 return stream.ToArray();
-
-
             }
         }
+
+
 
         public async Task<ServiceResponse<byte[]>> DownloadExcelTemplate()
         {
@@ -399,7 +468,21 @@ namespace Service.Services.QuestionService
             try
             {
                 var majors = await _majorRepository.GetAllAsync<GetMajorDto>();
-                fileContents = GenerateExcelTemplate(majors);
+                if (majors == null || majors.Count == 0)
+                {
+                    return new ServiceResponse<byte[]>
+                    {
+                        Data = null,
+                        Message = "Failed to generate Excel template.",
+                        Success = false,
+                        StatusCode = 500
+                    };
+                }
+                else
+                {
+                    fileContents = GenerateExcelTemplate(majors);
+
+                }
             }
             catch (Exception ex)
             {
@@ -454,7 +537,7 @@ namespace Service.Services.QuestionService
         public async Task<ServiceResponse<IEnumerable<ListQuestionAndAnswer>>> GetQuestionAndAnswersAsync()
         {
             var listQuestionAndAnswer = await _questionRepository.GetQuestionAndAnswersAsync();
-            if(listQuestionAndAnswer == null)
+            if (listQuestionAndAnswer == null)
             {
                 return new ServiceResponse<IEnumerable<ListQuestionAndAnswer>>
                 {
@@ -471,5 +554,71 @@ namespace Service.Services.QuestionService
                 Success = true
             };
         }
+        public async Task<ServiceResponse<bool>> UpdateQuestionAndAnswer(Guid id, UpdateQuestionDto updateQuestionDto)
+        {
+            var question = await _questionRepository.GetById(id);
+
+            if (question == null)
+            {
+                return new ServiceResponse<bool>
+                {
+                    Data = false,
+                    Message = "Question not found",
+                    Success = false,
+                    StatusCode = 404
+                };
+            }
+
+            if (await _questionRepository.ExistsAsync(q => q.Name == updateQuestionDto.Name && q.Id != id))
+            {
+                return new ServiceResponse<bool>
+                {
+                    Data = false,
+                    Message = "Duplicated data: Question with the same name already exists.",
+                    Success = false,
+                    StatusCode = 400
+                };
+            }
+            var major = await _majorRepository.GetMajorByName(updateQuestionDto.MajorName);
+            if (major == null)
+            {
+                return new ServiceResponse<bool>
+                {
+                    Data = false,
+                    Message = "Not found major",
+                    Success = false,
+                    StatusCode = 400
+                };
+            }
+
+            question.MajorId = major.Id;
+            question.Name = updateQuestionDto.Name;
+            question.Status = updateQuestionDto.Status;
+
+            await _questionRepository.UpdateAsync(question);
+
+            // Update or add answers
+            foreach (var answer in updateQuestionDto.Answers)
+            {
+                var existingAnswer = await _answerRepository.GetById(answer.AnswerId);
+
+                if (existingAnswer != null)
+                {
+                    existingAnswer.AnswerName = answer.AnswerName;
+                    await _answerRepository.UpdateAsync(answer.AnswerId, existingAnswer);
+                }
+               
+            }
+
+            return new ServiceResponse<bool>
+            {
+                Data = true,
+                Message = "Successfully updated question and answer options.",
+                Success = true,
+                StatusCode = 200
+            };
+        }
+
+
     }
 }

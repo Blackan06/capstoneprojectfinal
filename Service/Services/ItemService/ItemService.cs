@@ -48,11 +48,11 @@ namespace Service.Services.ItemService
                     StatusCode = 400
                 };
             }
-            createItemDto.CreatedAt = TimeZoneVietName(createItemDto.CreatedAt);
+            createItemDto.CreatedAt = TimeZoneVietName(DateTime.UtcNow);
             createItemDto.Name = createItemDto.Name.Trim();
             createItemDto.Description = createItemDto.Description.Trim();
             createItemDto.Type = createItemDto.Type.Trim();
-            createItemDto.Status = createItemDto.Status.Trim();
+            createItemDto.Status = "ACTIVE";
             var itemCreate = _mapper.Map<Item>(createItemDto);
             itemCreate.Id = Guid.NewGuid();
           
@@ -207,11 +207,31 @@ namespace Service.Services.ItemService
             }
             try
             {
+                
                 existingItem.Name = updateItemDto.Name.Trim();
                 existingItem.Description = updateItemDto.Description.Trim();
                 existingItem.Type = updateItemDto.Type.Trim();
                 existingItem.Status = updateItemDto.Status.Trim();
-                await _itemRepository.UpdateAsync(existingItem);
+
+
+                if (updateItemDto.NewImage != null)
+                {
+                    string uploadedImageUrl = await _imageRepository.UploadImageAndReturnUrlAsync(updateItemDto.NewImage);
+
+                    if (uploadedImageUrl == null)
+                    {
+                        return new ServiceResponse<bool>
+                        {
+                            Message = "Failed to upload image.",
+                            Success = false,
+                            StatusCode = 500
+                        };
+                    }
+
+                    existingItem.ImageUrl = uploadedImageUrl;
+                }
+
+                await _itemRepository.UpdateAsync(id, existingItem);
                 return new ServiceResponse<bool>
                 {
                     Data = true,

@@ -10,5 +10,6 @@ namespace DataAccess.Repositories.ItemRepositories
 {
     public interface IItemRepository : IGenericRepository<Item>
     {
+        Task<Item> GetItemByName(string itemName);
     }
 }

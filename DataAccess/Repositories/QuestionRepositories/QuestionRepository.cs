@@ -36,30 +36,42 @@ namespace DataAccess.Repositories.QuestionRepositories
         public async Task<IEnumerable<ListQuestionAndAnswer>> GetQuestionAndAnswersAsync()
         {
             var questionAndAnswers = await _dbContext.Questions
-                .Include(q => q.Answers).OrderByDescending(x => x.CreatedAt)
-                .Join(
-                    _dbContext.Majors,
-                    question => question.MajorId,
-                    major => major.Id,
-                    (question, major) => new ListQuestionAndAnswer
-                    {
-                        Id = question.Id,
-                        MajorId = major.Id,
-                        MajorName = major.Name,
-                        Name = question.Name,
-                        Status = question.Status,
-                        Answers = question.Answers.Select(answer => new GetAnswerListDto
+                .Include(x => x.Major)
+                .Include(q => q.Answers)
+                .ToListAsync();
+
+            var orderedQuestionAndAnswers = questionAndAnswers
+                .Select(question => new ListQuestionAndAnswer
+                {
+                    Id = question.Id,
+                    MajorId = question.Major.Id,
+                    MajorName = question.Major.Name,
+                    Name = question.Name,
+                    Status = question.Status,
+                    Answers = question.Answers
+                        .Select(answer => new GetAnswerListDto
                         {
                             Id = answer.Id,
                             AnswerName = answer.AnswerName,
                             IsRight = answer.IsRight
-                        }).OrderByDescending(x => x.CreatedAt).ToList()
-                    }
-                )
-                .ToListAsync();
+                        })
+                        .OrderByDescending(x => x.CreatedAt)
+                        .ToList()
+                })
+                .OrderByDescending(x => x.CreatedAt)
+                .ToList();
 
-            return questionAndAnswers;
+            return orderedQuestionAndAnswers;
         }
 
+        public async Task<Question> GetQuestionByNameAsync(string questionName)
+        {
+            var question = await _dbContext.Questions.FirstOrDefaultAsync(x => x.Name == questionName.Trim());
+            if(question  == null)
+            {
+                return null;
+            }
+            return question;
+        }
     }
 }

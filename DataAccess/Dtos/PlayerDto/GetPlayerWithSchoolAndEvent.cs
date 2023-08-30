@@ -11,5 +11,7 @@ namespace DataAccess.Dtos.PlayerDto
         public Guid Id { get ; set ; }
 
         public Guid schoolId { get ; set ; }
+        public string Email { get ; set ; }
+        public string SchoolName { get ; set ; }
     }
 }

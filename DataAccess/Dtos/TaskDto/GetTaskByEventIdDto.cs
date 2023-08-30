@@ -24,6 +24,7 @@ namespace DataAccess.Dtos.TaskDto
         public TimeSpan Starttime { get; set; }
         public TimeSpan Endtime { get; set; }
 
+        public DateTime CreatedAt { get; set; }
         public DateTime EventSchoolStartTime { get; set; }
         public DateTime EventSchoolEndTime { get; set; }
     }

@@ -1,4 +1,5 @@
 ﻿using BusinessObjects.Model;
+using DataAccess.Dtos.LocationDto;
 using DataAccess.GenericRepositories;
 using System;
 using System.Collections.Generic;
@@ -10,5 +11,8 @@ namespace DataAccess.Repositories.LocationRepositories
 {
     public interface ILocationRepository : IGenericRepository<Location>
     {
+        Task<Location> GetLocationByName(string locationName);
+        Task<IEnumerable<GetLocationDto>> GetLocationListNPC();
+
     }
 }

@@ -8,8 +8,8 @@ namespace DataAccess.Dtos.EventTaskDto
 {
     public abstract class BaseEventTaskDto
     {
-        private Guid taskId;
         private Guid eventId;
+        private Guid taskId;
         private TimeSpan startTime;
         private TimeSpan endTime;
         private int priority;
