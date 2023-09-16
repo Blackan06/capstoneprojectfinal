@@ -3,6 +3,7 @@ using AutoMapper.QueryableExtensions;
 using BusinessObjects.Model;
 using DataAccess.Exceptions;
 using Microsoft.EntityFrameworkCore;
+using SendGrid.Helpers.Mail;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -143,6 +144,11 @@ namespace DataAccess.GenericRepositories
             await _dbContext.AddAsync(entity);
             await _dbContext.SaveChangesAsync();
             return entity;
+        }
+        public async Task CreateAsync(T entity)
+        {
+            await _dbContext.AddAsync(entity);
+            await _dbContext.SaveChangesAsync();
         }
 
         public async Task<TResult> AddAsync<TSource, TResult>(TSource source)

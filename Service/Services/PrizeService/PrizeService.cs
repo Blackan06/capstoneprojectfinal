@@ -4,7 +4,9 @@ using DataAccess.Configuration;
 using DataAccess.Dtos.PlayerPrizeDto;
 using DataAccess.Dtos.PrizeDto;
 using DataAccess.Repositories.PrizeRepositories;
+using DataAccess.Repositories.SchoolEventRepositories;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,11 +17,13 @@ namespace Service.Services.PrizeService
     public class PrizeService : IPrizeService
     {
         private readonly IPrizeRepository _prizeRepository;
+        private readonly ISchoolEventRepository _schoolEventRepository;
         private readonly IMapper _mapper;
         
-        public PrizeService(IPrizeRepository prizeRepository, IMapper mapper)
+        public PrizeService(IPrizeRepository prizeRepository, IMapper mapper, ISchoolEventRepository schoolEventRepository)
         {
             _prizeRepository = prizeRepository;
+            _schoolEventRepository = schoolEventRepository;
             _mapper = mapper;
         }
         private DateTime TimeZoneVietName(DateTime dateTime)
@@ -35,6 +39,17 @@ namespace Service.Services.PrizeService
         }
         public async Task<ServiceResponse<Guid>> CreateNewPrize(CreatePrizeDto createPrizeDto)
         {
+            var schoolEventId = await _schoolEventRepository.GetSchoolEventBySchoolIdAndEventId(createPrizeDto.SchoolId,createPrizeDto.EventId);
+            
+            if(schoolEventId == null)
+            {
+                return new ServiceResponse<Guid>
+                {
+                    Message = "Not found school in event or event not have school",
+                    Success = false,
+                    StatusCode = 400
+                };
+            }
             if (await _prizeRepository.ExistsAsync(s => s.Name == createPrizeDto.Name))
             {
                 return new ServiceResponse<Guid>
@@ -50,7 +65,7 @@ namespace Service.Services.PrizeService
             createPrizeDto.CreatedAt = TimeZoneVietName(DateTime.UtcNow);
             var createPrize = _mapper.Map<Prize>(createPrizeDto);
             createPrize.Id = Guid.NewGuid();
-           
+            createPrize.SchooleventId = schoolEventId.Id;
             await _prizeRepository.AddAsync(createPrize);
 
             return new ServiceResponse<Guid>
@@ -205,8 +220,28 @@ namespace Service.Services.PrizeService
             }
         }
 
-       
 
+        public async Task<ServiceResponse<bool>> DeletePrize(Guid id)
+        {
+            var check = await _prizeRepository.GetById(id);
+            if (check != null)
+            {
+                await _prizeRepository.DeleteAsync(id);
+                return new ServiceResponse<bool>
+                {
+                    Data = true,
+                    Message = "SUCCESS",
+                    StatusCode = 204,
+                    Success = true
+                };
+            }
+            return new ServiceResponse<bool>
+            {
+                Data = false,
+                Message = "FAILED",
+                Success = false
+            };
+        }
         private async Task<bool> PrizeExists(Guid id)
         {
             return await _prizeRepository.Exists(id);
@@ -239,5 +274,49 @@ namespace Service.Services.PrizeService
                 };
             }
         }
+        public async Task<ServiceResponse<List<Guid>>> CreateMultiplePrizes(List<CreatePrizeDto> createPrizes)
+        {
+            bool hasPrizeRankOne = await _prizeRepository.ExistsAsync(p =>
+                p.PrizeRank == 1);
+
+            if (hasPrizeRankOne && createPrizes.Any(p => p.PrizeRank == 1))
+            {
+                return new ServiceResponse<List<Guid>>
+                {
+                    Message = "Duplicated data: A prize with PrizeRank 1 already exists.",
+                    Success = false,
+                    StatusCode = 400
+                };
+            }
+            
+            foreach (var createPrizeDto in createPrizes)
+            {
+                var schoolEvent = await _schoolEventRepository.GetSchoolEventBySchoolIdAndEventId(createPrizeDto.SchoolId, createPrizeDto.EventId);
+                if (schoolEvent == null)
+                {
+                    return new ServiceResponse<List<Guid>>
+                    {
+                        Message = "Not found school in event or event not have school",
+                        Success = false,
+                        StatusCode = 400
+                    };
+                }
+                createPrizeDto.Description = createPrizeDto.Description.Trim();
+                createPrizeDto.Name = createPrizeDto.Name.Trim();
+                createPrizeDto.CreatedAt = TimeZoneVietName(DateTime.UtcNow);
+                var createPrize = _mapper.Map<Prize>(createPrizeDto);
+                createPrize.Id = Guid.NewGuid();
+                createPrize.SchooleventId = schoolEvent.Id;
+                await _prizeRepository.AddAsync(createPrize);
+            }
+
+            return new ServiceResponse<List<Guid>>
+            {
+                Message = "Successfully created multiple prizes.",
+                Success = true,
+                StatusCode = 201
+            };
+        }
+
     }
 }

@@ -5,7 +5,7 @@ using System.Text.Json.Serialization;
 public abstract class BaseTaskDto
 {
     private Guid locationId;
-    private Guid majorId;
+    private Guid? majorId;
     private Guid npcId;
     private Guid? itemId;
     private string name;
@@ -20,8 +20,7 @@ public abstract class BaseTaskDto
         set { locationId = value; }
     }
 
-    [Required]
-    public Guid MajorId
+    public Guid? MajorId
     {
         get { return majorId; }
         set { majorId = value; }

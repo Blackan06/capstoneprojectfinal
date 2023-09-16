@@ -378,14 +378,14 @@ namespace DataAccess.Repositories.UserRepositories
             }
             else
             {
-                var passcode = await _dbContext.Players.Where(x => x.StudentId == student.Id).FirstOrDefaultAsync();
+                var passcode = await _dbContext.Players.Include(x => x.Inventory).Where(x => x.StudentId == student.Id).FirstOrDefaultAsync();
                 LoginResponseDto userWithToken = null;
 
                 if (student != null && passcode != null)
                 {
                     if (loginUnityDto.Email.Equals(student.Email) && loginUnityDto.Passcode.Equals(passcode.Passcode))
                     {
-                        var schoolEvent = await _dbContext.SchoolEvents.Include(x => x.School).Include(x => x.Event)
+                        var schoolEvent = await _dbContext.SchoolEvents.Include(x => x.Event).Include(x => x.School)
                                             .Where(x => x.School.Id == student.School.Id)
                                             .FirstOrDefaultAsync();
                         RefreshToken refreshToken = GenerateRefreshToken();
@@ -405,6 +405,7 @@ namespace DataAccess.Repositories.UserRepositories
                         userWithToken.SchoolId = student.School.Id;
                         userWithToken.EventName = schoolEvent.Event.Name;
                         userWithToken.SchoolStatus = schoolEvent.Status;
+                        userWithToken.PlayerId = passcode.Id;
                         if (userWithToken == null)
                         {
                             return new BaseResponse<LoginResponseDto>

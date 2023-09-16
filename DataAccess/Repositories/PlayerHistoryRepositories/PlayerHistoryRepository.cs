@@ -1,8 +1,10 @@
 ﻿using AutoMapper;
 using BusinessObjects.Model;
+using DataAccess.Dtos.PlayerDto;
 using DataAccess.Dtos.PlayerHistoryDto;
 using DataAccess.GenericRepositories;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -37,5 +39,51 @@ namespace DataAccess.Repositories.PlayerHistoryRepositories
 
             return playerHistoryDto;
         }
+
+        public async Task<IEnumerable<PlayerHistoryDto>> GetPlayerHistoryByPlayerId(Guid PlayerId)
+        {
+            var playerHistory = await _dbContext.PlayerHistories.Include(x => x.Player).ThenInclude(x => x.Student).ThenInclude(x => x.School)
+                                                                .Include(x => x.Eventtask).ThenInclude(x => x.Event)
+                                                                .Include(x => x.Eventtask)
+                                                                    .ThenInclude(x => x.Task)
+                                                                    .ThenInclude(x => x.Major)
+                                                                    .Where(x => x.PlayerId == PlayerId).ToListAsync();
+            var playerHistoryDtos = playerHistory
+              .Select(p => new PlayerHistoryDto
+              {
+                 Id = p.Id,
+                 PlayerId = p.PlayerId,
+                 TaskId = p.Eventtask.TaskId,
+                 TaskName = p.Eventtask.Task.Name,
+                 EventtaskId = p.EventtaskId,
+                 EventName = p.Eventtask.Event.Name,
+                 Passcode = p.Player.Passcode,
+                 MajorId = p.Eventtask.Task.MajorId,
+                 MajorName = p.Eventtask.Task.Major.Name,
+                 PlayerNickName = p.Player.Nickname,
+                 Status = p.Status,
+                 TaskPoint = p.TaskPoint,
+                 CompletedTime = p.CompletedTime,
+                 EventId = p.Eventtask.EventId,
+                 StudentEmail = p.Player.Student.Email,
+                 StudentName = p.Player.Student.Fullname,
+                 SchoolName = p.Player.Student.School.Name,
+                 TotalPoint = p.Player.TotalPoint,
+                 TotalTime = p.Player.TotalTime,
+                 
+                 
+              })
+              .OrderByDescending(p => p.CompletedTime)
+              .ToList();
+
+                if (playerHistoryDtos == null)
+                {
+                    return null;
+                }
+                var playerHistoryDto = _mapper.Map<IEnumerable<PlayerHistoryDto>>(playerHistoryDtos);
+                return playerHistoryDto;
+        }
+          
+        
     }
 }

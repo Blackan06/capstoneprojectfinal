@@ -3,6 +3,7 @@ using AutoMapper.QueryableExtensions;
 using BusinessObjects.Model;
 using DataAccess.Dtos.EventDto;
 using DataAccess.Dtos.EventTaskDto;
+using DataAccess.Dtos.SchoolEventDto;
 using DataAccess.Dtos.TaskDto;
 using DataAccess.Enum;
 using DataAccess.Exceptions;
@@ -37,6 +38,58 @@ namespace DataAccess.Repositories.EventTaskRepositories
             var eventTaskDtos = _mapper.Map<IEnumerable<EventTaskDto>>(eventTasks);
             return eventTaskDtos;
         }
+
+        public async Task<IEnumerable<EventTaskDto>> GetEventTaskWithTypeByEventId(Guid eventId)
+        {
+            var eventTasks = await _dbContext.EventTasks
+                           .Where(x => x.EventId == eventId)
+                           .ToListAsync();
+
+            var eventTaskDtos = _mapper.Map<IEnumerable<EventTaskDto>>(eventTasks);
+            return eventTaskDtos;
+        }
+
+        public async Task<int> GetPriorityByEventTask(Guid eventId, Guid? majorId)
+        {
+            int maxPriorityByType = 0;
+
+            var eventTasks = await _dbContext.EventTasks
+                .Include(x => x.Task).ThenInclude(x => x.Major)
+                .Where(x => x.EventId == eventId)
+                .ToListAsync();
+            
+            foreach (var eventTask in eventTasks)
+            {
+
+                if (eventTask.Task != null && eventTask.Task.Major != null && eventTask.Task.Major.Id == majorId)
+                {
+                    maxPriorityByType++;
+                }
+            }
+
+            return maxPriorityByType;
+        }
+
+
+
+        public async Task<SchoolEventDto> GetSchoolEventDto(Guid eventId)
+        {
+            var schoolEventdto = await _dbContext.SchoolEvents.FirstOrDefaultAsync(x => x.EventId == eventId);
+            if (schoolEventdto == null)
+            {
+                return null;
+            }
+
+            DateTime currentTime = TimeZoneVietName(DateTime.Now); 
+            if (currentTime >= schoolEventdto.StartTime && currentTime <= schoolEventdto.EndTime)
+            {
+                return null;
+            }
+
+            var schoolEvent = _mapper.Map<SchoolEventDto>(schoolEventdto);
+            return schoolEvent;
+        }
+
         public async Task<IEnumerable<GetTaskByEventIdDto>> GetTaskByEventTaskWithEventId(Guid eventId)
         {
             var getTaskAndEventDtos = await _dbContext.EventTasks
@@ -73,6 +126,18 @@ namespace DataAccess.Repositories.EventTaskRepositories
 
                     return getTaskAndEventDtos;
 
+        }
+
+        private DateTime TimeZoneVietName(DateTime dateTime)
+        {
+            TimeZoneInfo vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+
+            // Lấy thời gian hiện tại theo múi giờ UTC
+            DateTime utcNow = DateTime.UtcNow;
+
+            // Chuyển múi giờ từ UTC sang múi giờ Việt Nam
+            dateTime = TimeZoneInfo.ConvertTimeFromUtc(utcNow, vietnamTimeZone);
+            return dateTime;
         }
     }
 }

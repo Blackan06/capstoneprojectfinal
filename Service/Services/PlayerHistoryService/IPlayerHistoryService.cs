@@ -10,13 +10,13 @@ namespace Service.Services.PlayerHistoryService
 {
     public interface IPlayerHistoryService
     {
-        Task<ServiceResponse<IEnumerable<GetPlayerHistoryDto>>> GetPlayerHistory();
+        Task<ServiceResponse<IEnumerable<PlayerHistoryDto>>> GetPlayerHistory();
         Task<ServiceResponse<GetPlayerHistoryDto>> GetPlayerHistoryById(Guid eventId);
         Task<ServiceResponse<PlayerHistoryDto>> GetPlayerHistoryByEventTaskId(Guid eventTaskId);
         Task<ServiceResponse<GetPlayerHistoryDto>> GetPlayerHistoryByEventTaskIdAndPlayerId(Guid taskId, Guid PlayerId);
         Task<ServiceResponse<Guid>> CreateNewPlayerHistory(CreatePlayerHistoryDto createPlayerHistoryDto);
         Task<ServiceResponse<bool>> UpdatePlayerHistory(Guid id, UpdatePlayerHistoryDto PlayerHistoryDto);
-
+        Task<ServiceResponse<IEnumerable<PlayerHistoryDto>>> GetPlayerHistoryByPlayerId(Guid PlayerId);
         Task<ServiceResponse<bool>> DisablePlayerHistory(Guid id);
 
     }

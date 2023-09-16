@@ -100,15 +100,15 @@ namespace Service.Services.PlayerHistoryService
             }
         }
 
-        public async Task<ServiceResponse<IEnumerable<GetPlayerHistoryDto>>> GetPlayerHistory()
+        public async Task<ServiceResponse<IEnumerable<PlayerHistoryDto>>> GetPlayerHistory()
         {
-            var playerhistoryList = await _playerHistoryRepository.GetAllAsync<GetPlayerHistoryDto>();
+            var playerhistoryList = await _playerHistoryRepository.GetAllAsync<PlayerHistoryDto>();
 
             if (playerhistoryList != null)
             {
                 playerhistoryList = playerhistoryList.OrderByDescending(e => e.CreatedAt).ToList();
 
-                return new ServiceResponse<IEnumerable<GetPlayerHistoryDto>>
+                return new ServiceResponse<IEnumerable<PlayerHistoryDto>>
                 {
                     Data = playerhistoryList,
                     Success = true,
@@ -118,7 +118,7 @@ namespace Service.Services.PlayerHistoryService
             }
             else
             {
-                return new ServiceResponse<IEnumerable<GetPlayerHistoryDto>>
+                return new ServiceResponse<IEnumerable<PlayerHistoryDto>>
                 {
                     Data = playerhistoryList,
                     Success = false,
@@ -287,6 +287,27 @@ namespace Service.Services.PlayerHistoryService
             return await _playerHistoryRepository.Exists(id);
         }
 
-        
+        public async Task<ServiceResponse<IEnumerable<PlayerHistoryDto>>> GetPlayerHistoryByPlayerId(Guid PlayerId)
+        {
+            var playerHistory = await _playerHistoryRepository.GetPlayerHistoryByPlayerId(PlayerId);
+            
+            if(playerHistory == null)
+            {
+                return new ServiceResponse<IEnumerable<PlayerHistoryDto>>
+                {
+                    Data = null,
+                    Message = "No Data",
+                    StatusCode = 200,
+                    Success = true
+                };
+            }
+            return new ServiceResponse<IEnumerable<PlayerHistoryDto>>
+            {
+                Data = playerHistory,
+                Message = "Success",
+                StatusCode = 200,
+                Success = true
+            };
+        }
     }
 }

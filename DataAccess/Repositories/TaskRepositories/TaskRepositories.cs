@@ -4,6 +4,7 @@ using DataAccess.Dtos.TaskDto;
 using DataAccess.GenericRepositories;
 using DataAccess.Repositories.EventRepositories;
 using Microsoft.EntityFrameworkCore;
+using SendGrid.Helpers.Mail;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,6 +25,21 @@ namespace DataAccess.Repositories.TaskRepositories
             _mapper = mapper;
         }
 
-      
+        public async Task<GetTaskDto> GetTaskByTaskId(Guid id)
+        {
+            var task = await _dbContext.Tasks.Include(x => x.Major).Where(x => x.Id == id).FirstOrDefaultAsync();
+
+            if(task == null)
+            {
+                return null;
+            }
+            var taskDto = _mapper.Map<GetTaskDto>(task);
+            return taskDto;
+        }
+
+        public async Task<bool> IsTaskUnique(string name)
+        {
+            return await _dbContext.Tasks.AnyAsync(q => q.Name == name) == false;
+        }
     }
 }

@@ -11,6 +11,8 @@ namespace DataAccess.Repositories.TaskRepositories
 {
     public interface ITaskRepositories : IGenericRepository<Task>
     {
-
+        Task<GetTaskDto> GetTaskByTaskId(Guid id);
+        Task<bool> IsTaskUnique(string name);
+       
     }
 }

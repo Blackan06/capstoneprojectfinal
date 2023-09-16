@@ -62,9 +62,22 @@ namespace DataAccess.Configuration
             CreateMap<PlayerPrize, GetPrizeDto>().ReverseMap();
             CreateMap<PlayerPrize, UpdatePlayerPrizeDto>().ReverseMap();
             CreateMap<PlayerPrize, CreatePlayerPrizeDto>().ReverseMap();
+            CreateMap<PlayerPrize, CreatePlayerPrize2Dto>().ReverseMap();
             CreateMap<PlayerPrize, PlayerPrizeDto>()
                         .ForMember(dest => dest.PlayerName, opt => opt.MapFrom(src => src.Player.Nickname))
                         .ForMember(dest => dest.PrizeName, opt => opt.MapFrom(src => src.Prize.Name));
+            CreateMap<PlayerPrize, GetPlayerPrize2Dto>()
+                        .ForMember(dest => dest.StudentName, opt => opt.MapFrom(src => src.Player.Student.Fullname))
+                        .ForMember(dest => dest.PrizeName, opt => opt.MapFrom(src => src.Prize.Name))
+                        .ForMember(dest => dest.EventName, opt => opt.MapFrom(src => src.Prize.Schoolevent.Event.Name))
+                        .ForMember(dest => dest.PrizeRank, opt => opt.MapFrom(src => src.Prize.PrizeRank))
+                        .ForMember(dest => dest.Quantity, opt => opt.MapFrom(src => src.Prize.Quantity))
+                        .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Prize.Description))
+                        .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Prize.Status))
+                        .ForMember(dest => dest.StudentEmail, opt => opt.MapFrom(src => src.Player.Student.Email))
+                        .ForMember(dest => dest.SchoolName, opt => opt.MapFrom(src => src.Prize.Schoolevent.School.Name));
+            
+            
             #endregion
             #region Event Task
             CreateMap<EventTask, GetEventTaskDto>().ReverseMap();
@@ -75,7 +88,8 @@ namespace DataAccess.Configuration
 
             CreateMap<EventTask, EventTaskDto>()
                        .ForMember(dest => dest.EventName, opt => opt.MapFrom(src => src.Event.Name))
-                       .ForMember(dest => dest.TaskName, opt => opt.MapFrom(src => src.Task.Name));
+                       .ForMember(dest => dest.TaskName, opt => opt.MapFrom(src => src.Task.Name))
+                       .ForMember(dest => dest.TaskType, opt => opt.MapFrom(src => src.Task.Type));
             CreateMap<CreateListEventTaskDto, EventTask>()
                        .ForMember(dest => dest.Id, opt => opt.Ignore())
                        .ForMember(dest => dest.PlayerHistories, opt => opt.Ignore())
@@ -144,7 +158,8 @@ namespace DataAccess.Configuration
 
             #region Prize
             CreateMap<Prize, PrizeDto>()
-                .ForMember(dest => dest.EventName, opt => opt.MapFrom(src => src.Event.Name));
+                .ForMember(dest => dest.EventName, opt => opt.MapFrom(src => src.Schoolevent.Event.Name))
+                .ForMember(dest => dest.SchoolName, opt => opt.MapFrom(src => src.Schoolevent.School.Name));
             CreateMap<Prize, UpdatePrizeDto>().ReverseMap();
             CreateMap<Prize, CreatePrizeDto>().ReverseMap();
             CreateMap<Prize, GetPrizeDto>().ReverseMap();
@@ -183,11 +198,19 @@ namespace DataAccess.Configuration
                             .ForMember(dest => dest.StudentName, opt => opt.MapFrom(src => src.Student.Fullname))
                             .ForMember(dest => dest.StudentEmail, opt => opt.MapFrom(src => src.Student.Email))
                             .ForMember(dest => dest.SchoolName, opt => opt.MapFrom(src => src.Student.School.Name));
+            CreateMap<Player, RankPlayer>()
+                            .ForMember(dest => dest.EventName, opt => opt.MapFrom(src => src.Event.Name))
+                            .ForMember(dest => dest.StudentName, opt => opt.MapFrom(src => src.Student.Fullname))
+                            .ForMember(dest => dest.StudentEmail, opt => opt.MapFrom(src => src.Student.Email))
+                            .ForMember(dest => dest.SchoolName, opt => opt.MapFrom(src => src.Student.School.Name));
             CreateMap<Player, UpdatePlayerDto>().ReverseMap();
             CreateMap<Player, CreatePlayerDto>().ReverseMap();
             CreateMap<Player, GetPlayerDto>().ReverseMap();
-            CreateMap<Player, GetPlayerWithSchoolAndEvent>().ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Student.Email))
-                                                            .ForMember(dest => dest.SchoolName, opt => opt.MapFrom(src => src.Student.School.Name));
+            CreateMap<Player, GetPlayerWithSchoolAndEvent>().ForMember(dest => dest.StudentEmail, opt => opt.MapFrom(src => src.Student.Email))
+                                                            .ForMember(dest => dest.SchoolName, opt => opt.MapFrom(src => src.Student.School.Name))
+                                                            .ForMember(dest => dest.EventName, opt => opt.MapFrom(src => src.Event.Name))
+                                                            .ForMember(dest => dest.StudentName, opt => opt.MapFrom(src => src.Student.Fullname))
+                                                            .ForMember(dest => dest.StudentId, opt => opt.MapFrom(src => src.Student.Id));
             CreateMap<CreateListPlayerDto, Player>()
                            .ForMember(dest => dest.Id, opt => opt.MapFrom(src => Guid.NewGuid()))
                            .ForMember(dest => dest.StudentId, opt => opt.MapFrom(src => src.StudentId))
@@ -202,7 +225,20 @@ namespace DataAccess.Configuration
 
             #region Player History
             CreateMap<PlayerHistory, PlayerHistoryDto>()
-                            .ForMember(dest => dest.PlayerNickName, opt => opt.MapFrom(src => src.Player.Nickname));
+                            .ForMember(dest => dest.PlayerNickName, opt => opt.MapFrom(src => src.Player.Nickname))
+                            .ForMember(dest => dest.TaskName, opt => opt.MapFrom(src => src.Eventtask.Task.Name))
+                            .ForMember(dest => dest.EventName, opt => opt.MapFrom(src => src.Eventtask.Event.Name))
+                            .ForMember(dest => dest.SchoolName, opt => opt.MapFrom(src => src.Player.Student.School.Name))
+                            .ForMember(dest => dest.StudentEmail, opt => opt.MapFrom(src => src.Player.Student.Email))
+                            .ForMember(dest => dest.StudentName, opt => opt.MapFrom(src => src.Player.Student.Fullname))
+                            .ForMember(dest => dest.StudentId, opt => opt.MapFrom(src => src.Player.Student.Id))
+                            .ForMember(dest => dest.MajorId, opt => opt.MapFrom(src => src.Eventtask.Task.MajorId))
+                            .ForMember(dest => dest.TaskId, opt => opt.MapFrom(src => src.Eventtask.Task.Id))
+                            .ForMember(dest => dest.EventId, opt => opt.MapFrom(src => src.Eventtask.Event.Id))
+                            .ForMember(dest => dest.MajorName, opt => opt.MapFrom(src => src.Eventtask.Task.Major.Name))
+                            .ForMember(dest => dest.Passcode, opt => opt.MapFrom(src => src.Player.Passcode))
+                            .ForMember(dest => dest.TotalPoint, opt => opt.MapFrom(src => src.Player.TotalPoint))
+                            .ForMember(dest => dest.TotalTime, opt => opt.MapFrom(src => src.Player.TotalTime));
             CreateMap<PlayerHistory, UpdatePlayerHistoryDto>().ReverseMap();
             CreateMap<PlayerHistory, CreatePlayerHistoryDto>().ReverseMap();
             CreateMap<PlayerHistory, GetPlayerHistoryDto>().ReverseMap();

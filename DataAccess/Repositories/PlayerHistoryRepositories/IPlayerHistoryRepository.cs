@@ -12,5 +12,6 @@ namespace DataAccess.Repositories.PlayerHistoryRepositories
     public interface IPlayerHistoryRepository : IGenericRepository<PlayerHistory>
     {
         Task<GetPlayerHistoryDto> GetPlayerHistoryByEventTaskIdAndPlayerId(Guid taskId, Guid PlayerId);
+        Task<IEnumerable<PlayerHistoryDto>> GetPlayerHistoryByPlayerId(Guid PlayerId);
     }
 }

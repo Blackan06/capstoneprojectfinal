@@ -20,9 +20,10 @@ namespace Service.Services.StudentService
         Task<ServiceResponse<bool>> UpdateStudent(Guid id, UpdateStudentDto studentDto);
         Task<ServiceResponse<PagedResult<StudentDto>>> GetStudentWithPage(QueryParameters queryParameters);
         Task<ServiceResponse<bool>> DisableStudent(Guid id);
-        Task<ServiceResponse<IEnumerable<StudentDto>>> GetStudentBySchoolId(Guid id);
+        Task<ServiceResponse<IEnumerable<GetStudentBySchoolAndEvent>>> GetStudentBySchoolId(Guid id);
         Task<ServiceResponse<byte[]>> DownloadExcelTemplate();
         Task<ServiceResponse<string>> ImportDataFromExcel(IFormFile file, Guid schoolEventId);
+        Task<ServiceResponse<string>> ImportDataFromExcelStudentWithSchoolId(IFormFile file, Guid schoolId);
         Task<ServiceResponse<IEnumerable<GetStudentBySchoolAndEvent>>> GetStudentByEventSchoolId(Guid schoolEventId);
 
         Task<byte[]> ExportDataToExcelStudent(Guid schoolId);

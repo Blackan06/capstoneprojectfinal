@@ -50,81 +50,63 @@ namespace Service.Services.TaskService
         }
         public async Task<ServiceResponse<Guid>> CreateNewTask(CreateTaskDto createTaskDto)
         {
+            // Check for duplicate tasks by name
             if (await _taskRepository.ExistsAsync(s => s.Name == createTaskDto.Name))
             {
-                return new ServiceResponse<Guid>
-                {
-                    Message = "Duplicated data: Task with the same name already exists.",
-                    Success = false,
-                    StatusCode = 400
-                };
+                return BadRequestResponse("Duplicated data: Task with the same name already exists.");
             }
+
+            // Check for duplicate tasks by location
             if (await _taskRepository.ExistsAsync(s => s.LocationId == createTaskDto.LocationId))
             {
-                return new ServiceResponse<Guid>
-                {
-                    Message = "Duplicated data: Task with the same location already exists.",
-                    Success = false,
-                    StatusCode = 400
-                };
+                return BadRequestResponse("Duplicated data: Task with the same location already exists.");
             }
-            if (await _taskRepository.ExistsAsync(s => s.Type == createTaskDto.Type))
+        
+            if (createTaskDto.Type == "QUESTIONANDANSWER")
             {
-                return new ServiceResponse<Guid>
-                {
-                    Message = "Duplicated data: Task with the same type already exists.",
-                    Success = false,
-                    StatusCode = 400
-                };
-            }
-            createTaskDto.Name = createTaskDto.Name.Trim();
-            createTaskDto.Type = createTaskDto.Type.Trim();
-            createTaskDto.Status = createTaskDto.Status.Trim();
-            createTaskDto.CreatedAt = TimeZoneVietName(DateTime.UtcNow);
-            var taskcreate = _mapper.Map<Task>(createTaskDto);
-            taskcreate.Id = Guid.NewGuid();
-            if (taskcreate.Type == "QUESTIONANDANSWER")
-            {
-                // Kiểm tra nếu ngành đã có câu hỏi đi kèm câu trả lời
-                var correspondingMajor = await _majorRepository.GetAsync(taskcreate.MajorId);
+                var correspondingMajor = await _majorRepository.GetAsync(createTaskDto.MajorId);
                 if (correspondingMajor == null)
                 {
-                    return new ServiceResponse<Guid>
-                    {
-                        Message = "Can't add jobs. The corresponding branch was not found.",
-                        Success = false,
-                        StatusCode = 400
-                    };
+                    return BadRequestResponse("Can't add jobs. The corresponding branch was not found.");
                 }
 
-                // Kiểm tra nếu câu hỏi của ngành đã có câu trả lời đi kèm
                 var questionWithAnswers = await _questionRepository.GetByMajorIdAsync(correspondingMajor.Id);
                 if (questionWithAnswers == null)
                 {
-                    return new ServiceResponse<Guid>
-                    {
-                        Message = "Can't add jobs. Industry must have a question with an answer.",
-                        Success = false,
-                        StatusCode = 400
-                    };
-                }
-            }else if(taskcreate.Type == "EXCHANGEITEM")
-            {
-                if(createTaskDto.ItemId == null)
-                {
-                    return new ServiceResponse<Guid>
-                    {
-                        Message = "Must have item",
-                        Success = false,
-                        StatusCode = 400
-                    };
+                    return BadRequestResponse("Can't add jobs. Industry must have a question with an answer.");
                 }
             }
-            await _taskRepository.AddAsync(taskcreate);
+            else if (createTaskDto.Type == "EXCHANGEITEM" && createTaskDto.ItemId == null)
+            {
+                return BadRequestResponse("Must have item");
+            }
 
+            createTaskDto.Id = Guid.NewGuid();
+            createTaskDto.Name = createTaskDto.Name.Trim();
+            createTaskDto.Type = createTaskDto.Type.Trim();
+            createTaskDto.Status = createTaskDto.Status.Trim();
+            createTaskDto.CreatedAt = DateTime.UtcNow;
+
+            await _taskRepository.AddAsync<CreateTaskDto, GetTaskDto>(createTaskDto);
+
+            return SuccessResponse();
+
+        }
+
+        private ServiceResponse<Guid> BadRequestResponse(string message)
+        {
             return new ServiceResponse<Guid>
             {
-                Data = taskcreate.Id,
+                Message = message,
+                Success = false,
+                StatusCode = 400
+            };
+        }
+
+        private ServiceResponse<Guid> SuccessResponse()
+        {
+            return new ServiceResponse<Guid>
+            {
                 Message = "Successfully",
                 Success = true,
                 StatusCode = 201
@@ -132,7 +114,28 @@ namespace Service.Services.TaskService
         }
 
 
-    
+        public async Task<ServiceResponse<bool>> DeleteTask(Guid id)
+        {
+            var check = await _taskRepository.GetById(id);
+            if (check != null)
+            {
+                await _taskRepository.DeleteAsync(id);
+                return new ServiceResponse<bool>
+                {
+                    Data = true,
+                    Message = "SUCCESS",
+                    StatusCode = 204,
+                    Success = true
+                };
+            }
+            return new ServiceResponse<bool>
+            {
+                Data = false,
+                Message = "FAILED",
+                Success = false
+            };
+        }
+
         public async Task<ServiceResponse<IEnumerable<TaskDto>>> GetTask()
         {
            

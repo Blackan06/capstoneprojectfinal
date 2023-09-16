@@ -104,16 +104,36 @@ namespace Service.Services.EventTaskService
                 StatusCode = 201
             };
         }
-
-        public async Task<ServiceResponse<IEnumerable<GetEventTaskDto>>> GetEventTask()
+        public async Task<ServiceResponse<bool>> DeleteEventTask(Guid id)
         {
-            var eventList = await _eventTaskRepository.GetAllAsync<GetEventTaskDto>();
+            var check = await _eventTaskRepository.GetById(id);
+            if (check != null)
+            {
+                await _eventTaskRepository.DeleteAsync(id);
+                return new ServiceResponse<bool>
+                {
+                    Data = true,
+                    Message = "SUCCESS",
+                    StatusCode = 204,
+                    Success = true
+                };
+            }
+            return new ServiceResponse<bool>
+            {
+                Data = false,
+                Message = "FAILED",
+                Success = false
+            };
+        }
+        public async Task<ServiceResponse<IEnumerable<EventTaskDto>>> GetEventTask()
+        {
+            var eventList = await _eventTaskRepository.GetAllAsync<EventTaskDto>();
            
             if (eventList != null)
             {
                 eventList = eventList.OrderByDescending(e => e.CreatedAt).ToList();
 
-                return new ServiceResponse<IEnumerable<GetEventTaskDto>>
+                return new ServiceResponse<IEnumerable<EventTaskDto>>
                 {
                     Data = eventList,
                     Success = true,
@@ -123,7 +143,7 @@ namespace Service.Services.EventTaskService
             }
             else
             {
-                return new ServiceResponse<IEnumerable<GetEventTaskDto>>
+                return new ServiceResponse<IEnumerable<EventTaskDto>>
                 {
                     Data = eventList,
                     Success = false,
@@ -298,11 +318,24 @@ namespace Service.Services.EventTaskService
             var newEventTasks = new List<EventTask>();
 
             int index = 0;
-            var existingEventTasks = await _eventTaskRepository.GetEventTaskByEventId(createEventTaskDtos.EventId);
-            existingEventTasks = existingEventTasks.OrderByDescending(et => et.Priority).ToList();
             var listTaskId = createEventTaskDtos.TaskId.Distinct().ToList();
             foreach (var dto in listTaskId)
             {
+                var task = await _taskRepository.GetTaskByTaskId(dto);
+                if (task == null)
+                {
+                    // Xử lý trường hợp task là null, có thể trả về một ServiceResponse lỗi hoặc thực hiện hành động phù hợp.
+                    return new ServiceResponse<List<Guid>>
+                    {
+                        Message = "Task not found.",
+                        Success = false,
+                        StatusCode = 404 // Hoặc một mã lỗi thích hợp.
+                    };
+                }
+
+
+                var existingEventTasks = await _eventTaskRepository.GetPriorityByEventTask(createEventTaskDtos.EventId, task?.MajorId);
+
                 // Check if a task with the same EventId and TaskId already exists
                 if (await _eventTaskRepository.ExistsAsync(t => t.EventId == createEventTaskDtos.EventId && t.TaskId == dto))
                 {
@@ -321,27 +354,24 @@ namespace Service.Services.EventTaskService
                         Success = false,
                         StatusCode = 400
                     };
-                }
-                // Check if the task's time range overlaps with existing tasks in the event
-                var tasksWithinEventTimeRange = await _eventTaskRepository.ExistsAsync(et =>
-                    et.EventId == createEventTaskDtos.EventId &&
-                    (
-                        (TimeSpan.Parse(createEventTaskDtos.StartTime) >= et.StartTime && TimeSpan.Parse(createEventTaskDtos.StartTime) < et.EndTime) ||
-                        (TimeSpan.Parse(createEventTaskDtos.EndTime) > et.StartTime && TimeSpan.Parse(createEventTaskDtos.EndTime) <= et.EndTime)
-                    ));
-
-                if (tasksWithinEventTimeRange)
+                }                
+                var checkSchoolEvent = await _eventTaskRepository.GetSchoolEventDto(createEventTaskDtos.EventId);
+                if(checkSchoolEvent == null)
                 {
                     return new ServiceResponse<List<Guid>>
                     {
-                        Message = "Task's time range overlaps with existing tasks in the event.",
+                        Message = "Not add task while schoolevent is active.",
                         Success = false,
                         StatusCode = 400
                     };
+
                 }
-                
                 index++;
-                int maxExistingPriority = existingEventTasks.Any() ? existingEventTasks.Max(et => et.Priority) : 0;
+                // Determine the type of the event task (You should replace this with the actual logic to get the type)
+               
+
+                // Calculate the new priority based on the type and index
+                int newPriority = existingEventTasks + index; 
                 createEventTaskDtos.Status = "ACTIVE";
                 createEventTaskDtos.Point = createEventTaskDtos.Point;
                 createEventTaskDtos.CreatedAt = TimeZoneVietName(createEventTaskDtos.CreatedAt);
@@ -351,7 +381,7 @@ namespace Service.Services.EventTaskService
                 eventTaskCreate.StartTime = TimeSpan.Parse(createEventTaskDtos.StartTime);
                 eventTaskCreate.EndTime = TimeSpan.Parse(createEventTaskDtos.EndTime);
                 eventTaskCreate.TaskId = dto;
-                eventTaskCreate.Priority = maxExistingPriority + index;
+                eventTaskCreate.Priority = newPriority;
                 addedEventTaskIds.Add(eventTaskCreate.Id);
                 newEventTasks.Add(eventTaskCreate);
             }
@@ -366,5 +396,6 @@ namespace Service.Services.EventTaskService
                 StatusCode = 201
             };
         }
+
     }
 }

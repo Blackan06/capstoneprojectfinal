@@ -11,6 +11,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FPTHCMAdventuresAPI", "FPTH
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Service", "Service\Service.csproj", "{8E8667D9-9951-4706-BE59-7659D58BCA21}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "UnitTest", "UnitTest", "{0EC1B022-4FA1-4705-9AD5-D01CB2093234}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FPTHCMAdventures.Application.UnitTests", "FPTHCMAdventures.Application.UnitTests\FPTHCMAdventures.Application.UnitTests.csproj", "{D3297388-EBF7-4531-AB5B-C8B0A4DED83E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,9 +37,16 @@ Global
 		{8E8667D9-9951-4706-BE59-7659D58BCA21}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8E8667D9-9951-4706-BE59-7659D58BCA21}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8E8667D9-9951-4706-BE59-7659D58BCA21}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D3297388-EBF7-4531-AB5B-C8B0A4DED83E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D3297388-EBF7-4531-AB5B-C8B0A4DED83E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D3297388-EBF7-4531-AB5B-C8B0A4DED83E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D3297388-EBF7-4531-AB5B-C8B0A4DED83E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{D3297388-EBF7-4531-AB5B-C8B0A4DED83E} = {0EC1B022-4FA1-4705-9AD5-D01CB2093234}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FEAAB823-1F68-4483-BB1F-00F3D3ABEBA0}

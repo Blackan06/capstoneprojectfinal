@@ -82,7 +82,27 @@ namespace Service.Services.SchoolEventService
                 StatusCode = 201
             };
         }
-
+        public async Task<ServiceResponse<bool>> DeleteSchoolEvent(Guid id)
+        {
+            var check = await _schoolEventRepository.GetById(id);
+            if (check != null)
+            {
+                await _schoolEventRepository.DeleteAsync(id);
+                return new ServiceResponse<bool>
+                {
+                    Data = true,
+                    Message = "SUCCESS",
+                    StatusCode = 204,
+                    Success = true
+                };
+            }
+            return new ServiceResponse<bool>
+            {
+                Data = false,
+                Message = "FAILED",
+                Success = false
+            };
+        }
         public async Task<ServiceResponse<IEnumerable<SchoolEventDto>>> GetSchoolEvent()
         {
             var schoolEventList = await _schoolEventRepository.GetAllAsync<SchoolEventDto>();

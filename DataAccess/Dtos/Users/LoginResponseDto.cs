@@ -8,6 +8,7 @@ namespace DataAccess.Dtos.Users
 {
     public class LoginResponseDto
     {
+        public Guid PlayerId { get; set; }
         public Guid StudentId { get; set; }
         public Guid SchoolId { get; set; }
         public string SchoolName { get; set; }

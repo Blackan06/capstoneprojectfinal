@@ -13,14 +13,15 @@ namespace BusinessObjects.Model
         }
 
         public Guid Id { get; set; }
-        public Guid EventId { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
         public string Status { get; set; }
         public int Quantity { get; set; }
         public DateTime CreatedAt { get; set; }
+        public int PrizeRank { get; set; }
+        public Guid SchooleventId { get; set; }
 
-        public virtual Event Event { get; set; }
+        public virtual SchoolEvent Schoolevent { get; set; }
         public virtual ICollection<PlayerPrize> PlayerPrizes { get; set; }
     }
 }

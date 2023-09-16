@@ -11,6 +11,7 @@ using System;
 using Service.Services.PlayerPrizeService;
 using DataAccess.Dtos.PlayerPrizeDto;
 using Microsoft.AspNetCore.Authorization;
+using DataAccess.Dtos.PlayerDto;
 
 namespace FPTHCMAdventuresAPI.Controllers
 {
@@ -27,6 +28,34 @@ namespace FPTHCMAdventuresAPI.Controllers
         {
             this._mapper = mapper;
             _playerPrizeService = playerPrizeService;
+        }
+        [HttpGet("GetPlayerPrize/{eventId}/{schoolId}")]
+
+        public async Task<ActionResult<ServiceResponse<GetPlayerPrizeDto>>> GetRankedPlayer(Guid eventId, Guid schoolId)
+        {
+            try
+            {
+                var res = await _playerPrizeService.GetPlayerPrizeByEventIdAndSchoolId(eventId, schoolId);
+                return Ok(res);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Internal server error: " + ex.Message);
+            }
+        }
+        [HttpGet("GetRankedPlayer/{eventId}/{schoolId}")]
+
+        public async Task<ActionResult<ServiceResponse<RankPlayer>>> GetRankedPlayerV2(Guid eventId, Guid schoolId)
+        {
+            try
+            {
+                var res = await _playerPrizeService.GetRankedPlayer(eventId, schoolId);
+                return Ok(res);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Internal server error: " + ex.Message);
+            }
         }
         [HttpGet(Name = "GetPlayerPrize")]
 
@@ -73,6 +102,32 @@ namespace FPTHCMAdventuresAPI.Controllers
                 return StatusCode(500, "Internal server error: " + ex.Message);
             }
         }
+        [HttpPost]
+        [Route("CreatePlayerPrize/{playerId}")]
+
+        public async Task<ActionResult<ServiceResponse<GetPlayerPrizeDto>>> CreateNewPlayerPrizeWithPlayerId(Guid playerId,CreatePlayerPrize2Dto createPlayerPrizeDto)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+                var res = await _playerPrizeService.CreateNewPlayerPrizeWithplayerId(playerId,createPlayerPrizeDto);
+                if (!res.Success)
+                {
+                    return BadRequest(res);
+                }
+                return Ok(res);
+            }
+            catch (Exception ex)
+            {
+
+                return StatusCode(500, "Internal server error: " + ex.Message);
+            }
+        }
+
+
         [HttpPut("{id}")]
 
         public async Task<ActionResult<ServiceResponse<GetPlayerPrizeDto>>> UpdatePlayerPrize(Guid id, [FromBody] UpdatePlayerPrizeDto updatePlayerPrizeDto)

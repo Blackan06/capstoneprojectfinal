@@ -59,7 +59,7 @@ namespace FPTHCMAdventuresAPI.Controllers
         }
         [HttpGet]
         [Route("filterdatawithschoolandevent")]
-        public async Task<ActionResult<GetStudentBySchoolAndEvent>> FilterDataBySchoolIdAndEventId(Guid? schoolId, Guid? eventId)
+        public async Task<ActionResult<GetPlayerWithSchoolAndEvent>> FilterDataBySchoolIdAndEventId(Guid? schoolId, Guid? eventId)
         {
             var eventDetail = await _playerService.filterData(schoolId, eventId);
             return Ok(eventDetail);
@@ -78,20 +78,7 @@ namespace FPTHCMAdventuresAPI.Controllers
                    return StatusCode(500, "Internal server error: " + ex.Message);
                }
            }*/
-        [HttpGet("GetRankedPlayer/{eventId}/{schoolId}")]
-
-        public async Task<ActionResult<ServiceResponse<PlayerDto>>> GetRankedPlayer(Guid eventId, Guid schoolId)
-        {
-            try
-            {
-                var res = await _playerService.GetRankedPlayer(eventId, schoolId);
-                return Ok(res);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, "Internal server error: " + ex.Message);
-            }
-        }
+       
         [HttpGet("{id}")]
         public async Task<ActionResult<GetPlayerDto>> GetPlayerById(Guid id)
         {
@@ -158,6 +145,7 @@ namespace FPTHCMAdventuresAPI.Controllers
                 return StatusCode(500, "Internal server error: " + ex.Message);
             }
         }
+      
 
         [Authorize]
 

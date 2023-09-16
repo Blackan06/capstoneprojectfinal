@@ -120,7 +120,20 @@ namespace FPTHCMAdventuresAPI.Controllers
                 return StatusCode(500, "Internal server error: " + ex.Message);
             }
         }
+        [HttpDelete("deletetask")]
+        public async Task<ActionResult<ServiceResponse<ItemDto>>> DeleteTask(Guid id)
+        {
+            try
+            {
+                var disableEvent = await _taskService.DeleteTask(id);
+                return Ok(disableEvent);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Internal server error: " + ex.Message);
+            }
 
+        }
         [HttpDelete("disabletask")]
         public async Task<ActionResult<ServiceResponse<TaskDto>>> DisableStatusTask(Guid id)
         {

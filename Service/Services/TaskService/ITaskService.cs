@@ -18,6 +18,8 @@ namespace Service.Services.TaskService
 /*        Task<ServiceResponse<IEnumerable<BusinessObjects.Model.Task>>> GetTaskDoneByMajor(Guid majorId);
 */
         Task<ServiceResponse<bool>> DisableTask(Guid id);
+        Task<ServiceResponse<bool>> DeleteTask(Guid id);
+
 
     }
 }

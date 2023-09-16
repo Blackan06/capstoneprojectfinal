@@ -51,7 +51,7 @@ namespace DataAccess.Repositories.ItemInventoryRepositories
         {
             var player = await _dbContext.Players
                 .Where(e => e.Nickname == PlayerNickName)
-                .Include(e => e.Inventories).ThenInclude(inventory => inventory.ItemInventories)
+                .Include(e => e.Inventory).ThenInclude(inventory => inventory.ItemInventories)
                 .FirstOrDefaultAsync();
 
             if (player == null)
@@ -60,22 +60,30 @@ namespace DataAccess.Repositories.ItemInventoryRepositories
             }
 
             // Thay đổi ở đây, lấy danh sách Item thay vì ItemInventory theo InventoryId
-            var inventoryId = player.Inventories.FirstOrDefault()?.Id ?? Guid.Empty;
-            var items = await _dbContext.ItemInventories
-                .Where(itemInventory => itemInventory.InventoryId == inventoryId)
-                .Select(itemInventory => itemInventory.Item) // Lấy danh sách các Item từ ItemInventory
-                .ToListAsync();
-            var listItemInventoryByPlayer = new GetListItemInventoryByPlayer
+            var inventoryId = player.Inventory.Id;
+            if(inventoryId != Guid.Empty)
             {
-                PlayerId = player.Id,
-                InventoryId = inventoryId,
-                // Ánh xạ từ danh sách Item sang GetItemDto (nếu cần)
-                ListItem = _mapper.Map<List<GetListItemDto>>(items),
-                ListItemInventory = _mapper.Map<List<GetItemInventoryDto>>(player.Inventories
-                                    .FirstOrDefault()?.ItemInventories)
-            };
+                var items = await _dbContext.ItemInventories
+               .Where(itemInventory => itemInventory.InventoryId == inventoryId)
+               .Select(itemInventory => itemInventory.Item) // Lấy danh sách các Item từ ItemInventory
+               .ToListAsync();
+                var listItemInventoryByPlayer = new GetListItemInventoryByPlayer
+                {
+                    PlayerId = player.Id,
+                    InventoryId = inventoryId,
+                    // Ánh xạ từ danh sách Item sang GetItemDto (nếu cần)
+                    ListItem = _mapper.Map<List<GetListItemDto>>(items),
+                    ListItemInventory = _mapper.Map<List<GetItemInventoryDto>>(player.Inventory
+                                        .ItemInventories)
+                };
 
-            return listItemInventoryByPlayer;
+                return listItemInventoryByPlayer;
+            }
+            else
+            {
+                return null;
+            }
+           
         }
 
     }

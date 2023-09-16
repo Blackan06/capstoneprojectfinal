@@ -17,6 +17,7 @@ namespace Service.Services.SchoolService
         Task<ServiceResponse<bool>> UpdateSchool(Guid id, UpdateSchoolDto schoolDto);
         Task<ServiceResponse<PagedResult<SchoolDto>>> GetSchoolWithPage(QueryParameters queryParameters);
         Task<ServiceResponse<bool>> DisableSchool(Guid id);
+        Task<ServiceResponse<bool>> DeleteSchool(Guid id);
         Task<ServiceResponse<IEnumerable<School>>> GetSchoolByName(string schoolname);
     }
 }

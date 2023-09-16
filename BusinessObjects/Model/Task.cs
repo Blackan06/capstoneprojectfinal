@@ -14,7 +14,7 @@ namespace BusinessObjects.Model
 
         public Guid Id { get; set; }
         public Guid LocationId { get; set; }
-        public Guid MajorId { get; set; }
+        public Guid? MajorId { get; set; }
         public Guid NpcId { get; set; }
         public Guid? ItemId { get; set; }
         public string Name { get; set; }

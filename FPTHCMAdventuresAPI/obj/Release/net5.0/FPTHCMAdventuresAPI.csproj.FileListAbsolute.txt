@@ -13,6 +13,7 @@ F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\HealthChecks.UI.Core.
 F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\HealthChecks.UI.InMemory.Storage.dll
 F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\AutoMapper.dll
 F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\AutoMapper.Extensions.Microsoft.DependencyInjection.dll
+F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\BouncyCastle.Cryptography.dll
 F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\ClosedXML.dll
 F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\DocumentFormat.OpenXml.dll
 F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\Enums.NET.dll
@@ -22,6 +23,7 @@ F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\Fractions.dll
 F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\Humanizer.dll
 F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\Irony.dll
 F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\KubernetesClient.dll
+F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\MailKit.dll
 F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\MathNet.Numerics.dll
 F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\Microsoft.AspNetCore.Authentication.Google.dll
 F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
@@ -39,6 +41,8 @@ F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\Microsoft.CodeAnalysi
 F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\Microsoft.CodeAnalysis.CSharp.Workspaces.dll
 F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\Microsoft.CodeAnalysis.Razor.dll
 F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\Microsoft.CodeAnalysis.Workspaces.dll
+F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\Microsoft.Data.Edm.dll
+F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\Microsoft.Data.OData.dll
 F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\Microsoft.Data.SqlClient.dll
 F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\Microsoft.Data.Sqlite.dll
 F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\Microsoft.DotNet.PlatformAbstractions.dll
@@ -79,6 +83,7 @@ F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\Microsoft.VisualStudi
 F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\Microsoft.VisualStudio.Web.CodeGeneration.Utils.dll
 F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\Microsoft.VisualStudio.Web.CodeGenerators.Mvc.dll
 F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\Microsoft.Win32.SystemEvents.dll
+F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\MimeKit.dll
 F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\Newtonsoft.Json.dll
 F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\Newtonsoft.Json.Bson.dll
 F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\NPOI.OOXML.dll
@@ -87,6 +92,7 @@ F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\NPOI.OpenXmlFormats.d
 F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\NPOI.dll
 F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\OpenAI_API.dll
 F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\BouncyCastle.Crypto.dll
+F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\SendGrid.dll
 F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\Serilog.dll
 F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\Serilog.AspNetCore.dll
 F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\Serilog.Expressions.dll
@@ -106,6 +112,7 @@ F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\SQLitePCLRaw.batterie
 F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\SQLitePCLRaw.nativelibrary.dll
 F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\SQLitePCLRaw.core.dll
 F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\SQLitePCLRaw.provider.dynamic_cdecl.dll
+F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\StarkbankEcdsa.dll
 F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\Swashbuckle.AspNetCore.Swagger.dll
 F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\Swashbuckle.AspNetCore.SwaggerGen.dll
 F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\Swashbuckle.AspNetCore.SwaggerUI.dll
@@ -127,6 +134,7 @@ F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\System.Security.Crypt
 F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\System.Security.Cryptography.ProtectedData.dll
 F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\System.Security.Cryptography.Xml.dll
 F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\System.Security.Permissions.dll
+F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\System.Spatial.dll
 F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\System.Text.Encoding.CodePages.dll
 F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\System.Windows.Extensions.dll
 F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\XLParser.dll
@@ -183,6 +191,33 @@ F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\ru\Microsoft.CodeAnal
 F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\tr\Microsoft.CodeAnalysis.Workspaces.resources.dll
 F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\zh-Hans\Microsoft.CodeAnalysis.Workspaces.resources.dll
 F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\zh-Hant\Microsoft.CodeAnalysis.Workspaces.resources.dll
+F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\de\Microsoft.Data.Edm.resources.dll
+F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\es\Microsoft.Data.Edm.resources.dll
+F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\fr\Microsoft.Data.Edm.resources.dll
+F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\it\Microsoft.Data.Edm.resources.dll
+F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\ja\Microsoft.Data.Edm.resources.dll
+F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\ko\Microsoft.Data.Edm.resources.dll
+F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\ru\Microsoft.Data.Edm.resources.dll
+F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\zh-Hans\Microsoft.Data.Edm.resources.dll
+F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\zh-Hant\Microsoft.Data.Edm.resources.dll
+F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\de\Microsoft.Data.OData.resources.dll
+F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\es\Microsoft.Data.OData.resources.dll
+F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\fr\Microsoft.Data.OData.resources.dll
+F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\it\Microsoft.Data.OData.resources.dll
+F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\ja\Microsoft.Data.OData.resources.dll
+F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\ko\Microsoft.Data.OData.resources.dll
+F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\ru\Microsoft.Data.OData.resources.dll
+F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\zh-Hans\Microsoft.Data.OData.resources.dll
+F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\zh-Hant\Microsoft.Data.OData.resources.dll
+F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\de\System.Spatial.resources.dll
+F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\es\System.Spatial.resources.dll
+F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\fr\System.Spatial.resources.dll
+F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\it\System.Spatial.resources.dll
+F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\ja\System.Spatial.resources.dll
+F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\ko\System.Spatial.resources.dll
+F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\ru\System.Spatial.resources.dll
+F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\zh-Hans\System.Spatial.resources.dll
+F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\zh-Hant\System.Spatial.resources.dll
 F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\runtimes\unix\lib\netcoreapp3.1\Microsoft.Data.SqlClient.dll
 F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\runtimes\win\lib\netcoreapp3.1\Microsoft.Data.SqlClient.dll
 F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\runtimes\win-arm\native\Microsoft.Data.SqlClient.SNI.dll
@@ -209,9 +244,7 @@ F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\runtimes\unix\lib\net
 F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\runtimes\win\lib\netcoreapp3.1\System.Drawing.Common.dll
 F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\runtimes\win\lib\netstandard2.0\System.Runtime.Caching.dll
 F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\runtimes\win\lib\netstandard2.0\System.Security.AccessControl.dll
-F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\runtimes\win\lib\netcoreapp3.1\System.Security.Cryptography.Pkcs.dll
 F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\runtimes\win\lib\netstandard2.0\System.Security.Cryptography.ProtectedData.dll
-F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\runtimes\win\lib\netcoreapp3.1\System.Text.Encoding.CodePages.dll
 F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\runtimes\win\lib\netcoreapp3.1\System.Windows.Extensions.dll
 F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\BusinessObjects.dll
 F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\DataAccess.dll
@@ -235,3 +268,4 @@ F:\FPTHCMAdventures\FPTHCMAdventuresAPI\obj\Release\net5.0\refint\FPTHCMAdventur
 F:\FPTHCMAdventures\FPTHCMAdventuresAPI\obj\Release\net5.0\FPTHCMAdventuresAPI.pdb
 F:\FPTHCMAdventures\FPTHCMAdventuresAPI\obj\Release\net5.0\FPTHCMAdventuresAPI.genruntimeconfig.cache
 F:\FPTHCMAdventures\FPTHCMAdventuresAPI\obj\Release\net5.0\ref\FPTHCMAdventuresAPI.dll
+F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\RestSharp.dll

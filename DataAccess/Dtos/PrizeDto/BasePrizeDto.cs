@@ -6,18 +6,25 @@ namespace DataAccess.Dtos.PrizeDto
 {
     public abstract class BasePrizeDto
     {
-        private Guid eventId;
+        private Guid schooleventId;
         private string name;
         private string description;
         private string status;
         private int quantity;
         private DateTime? createdAt;
+        private int prizeRank;
 
         [Required]
-        public Guid EventId
+        public int PrizeRank
         {
-            get { return eventId; }
-            set { eventId = value; }
+            get { return prizeRank; }
+            set { prizeRank = value; }
+        }
+        [Required]
+        public Guid SchooleventId
+        {
+            get { return schooleventId; }
+            set { schooleventId = value; }
         }
 
         [Required]
@@ -47,7 +54,7 @@ namespace DataAccess.Dtos.PrizeDto
             get { return quantity; }
             set { quantity = value; }
         }
-
+       
         [JsonIgnore]
 
         public DateTime? CreatedAt

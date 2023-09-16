@@ -15,5 +15,7 @@ namespace DataAccess.Repositories.SchoolEventRepositories
         Task<List<GetSchoolByEventIdDto>> GetSchoolByEventId(Guid eventid);
         Task<SchoolEventDto> GetSchoolByEventIdCheck(Guid eventid);
 
+        Task<SchoolEventDto> GetSchoolEventBySchoolIdAndEventId(Guid schoolId, Guid eventId);
+
     }
 }

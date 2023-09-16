@@ -5,6 +5,7 @@ using DataAccess.Dtos.PlayerDto;
 using DataAccess.Dtos.StudentDto;
 using DataAccess.GenericRepositories;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -66,66 +67,135 @@ namespace DataAccess.Repositories.PlayerRepositories
             return player;
         }
 
-        public async Task<IEnumerable<PlayerDto>> GetRankedPlayer(Guid eventid, Guid schoolId)
+        public async Task<IEnumerable<RankPlayer>> GetRankedPlayer(Guid eventid, Guid schoolId)
         {
             var players = await _dbContext.Players
                 .Include(p => p.Event)
                 .Include(p => p.Student).ThenInclude(p => p.School)
+                .Include(x => x.PlayerPrizes)
                 .Where(p => p.Student.SchoolId == schoolId && p.EventId == eventid)
                 .ToListAsync();
+            var schoolEvent = await _dbContext.SchoolEvents.Include(x => x.Event).Include(x => x.School).Where(x => x.SchoolId == schoolId && x.EventId == eventid).FirstOrDefaultAsync();
+            if(schoolEvent == null)
+            {
+                return null;
+            }
+            else
+            {
+                var prizeLists = await _dbContext.Prizes
+                                 .Include(x => x.PlayerPrizes)
+                                 .Include(x => x.Schoolevent)
+                                 .OrderBy(x => x.PrizeRank)
+                                 .Where(x => x.SchooleventId == schoolEvent.Id)
+                                 .ToListAsync();
 
-          
-
-            var playerDtos = players
-                .Select(p => new PlayerDto
+                var playerDtos = players
+                .Select((p) => new RankPlayer
                 {
-                    Id = p.Id,
-                    EventId = eventid,
-                    EventName = p.Event.Name,  // Thay thế bằng logic lấy tên sự kiện nếu cần
-                    StudentName = p.Student.Fullname,
-                    SchoolName = p.Student.School.Name,
-                    Passcode = p.Passcode,
-                    StudentId = p.StudentId,
-                    Nickname = !string.IsNullOrEmpty(p.Nickname) ? p.Nickname : "",  
-                    CreatedAt = p.CreatedAt,
-                    TotalPoint = p.TotalPoint,
-                    TotalTime = p.TotalTime,
-                    Isplayer = p.Isplayer
+                        Id = p.Id,
+                        EventId = eventid,
+                        EventName = p.Event.Name,
+                        StudentName = p.Student.Fullname,
+                        SchoolName = p.Student.School.Name,
+                        Passcode = p.Passcode,
+                        StudentId = p.StudentId,
+                        Nickname = !string.IsNullOrEmpty(p.Nickname) ? p.Nickname : "",
+                        CreatedAt = p.CreatedAt,
+                        TotalPoint = p.TotalPoint,
+                        TotalTime = p.TotalTime,
+                        Isplayer = p.Isplayer,
                 })
-                .Where(dto => dto.TotalPoint != 0 || dto.TotalTime != 0 || !string.IsNullOrEmpty(dto.Nickname))  // Loại bỏ những người chơi có point, time và nickname đều không tồn tại
-                .OrderByDescending(p => p.TotalPoint)
-                .ThenBy(p => p.TotalTime)
-                .ToList();
+                    .Where(dto => dto.TotalPoint != 0 || dto.TotalTime != 0 || !string.IsNullOrEmpty(dto.Nickname))  // Loại bỏ những người chơi có point, time và nickname đều không tồn tại
+                    .OrderByDescending(p => p.TotalPoint)
+                    .ThenBy(p => p.TotalTime)
+                    .ToList();
 
-            return playerDtos;
+                for (int i = 0; i < playerDtos.Count; i++)
+                {
+                    if (i >= prizeLists.Count)
+                    {
+                        playerDtos[i].PrizedId = Guid.Empty;
+                        playerDtos[i].PrizedName = null;
+
+                    }
+                    else
+                    {
+                        playerDtos[i].PrizedId = prizeLists[i].Id;
+                        playerDtos[i].PrizedName = prizeLists[i].Name;
+                    }
+                   
+                    
+                }
+                return playerDtos;
+            }
+         
         }
-
+        private string GetNextPrizeName(List<Prize> prizeList)
+        {
+            for (int i = 0; i < prizeList.Count; i++)
+            {
+                return prizeList[i].Name;
+            }
+            return null;
+        }
         public async Task<IEnumerable<GetPlayerWithSchoolAndEvent>> filterData(Guid? schoolId, Guid? eventId)
         {
-            IQueryable<Player> query = _dbContext.Players.Include(x => x.Student).ThenInclude(s => s.School)
-                                                            .ThenInclude(school => school.SchoolEvents)
-                                                            .ThenInclude(schoolEvent => schoolEvent.Event);
+            IQueryable<Player> query = _dbContext.Players.Include(x => x.Student)
+                                                        .ThenInclude(s => s.School)
+                                                        .ThenInclude(school => school.SchoolEvents)
+                                                        .ThenInclude(schoolEvent => schoolEvent.Event);
+
             if (schoolId.HasValue)
             {
                 query = query.Where(s => s.Student.SchoolId == schoolId.Value);
             }
+
             if (eventId.HasValue)
             {
                 query = query.Where(s => s.Student.School.SchoolEvents.Any(se => se.EventId == eventId.Value));
             }
-
-            var result = await query.Select(s => new GetPlayerWithSchoolAndEvent
+            if (schoolId.HasValue && eventId.HasValue)
             {
-                Id = s.Id,
+                query = query.Where(s => s.Student.School.SchoolEvents.Any(se => se.EventId == eventId.Value && se.SchoolId == schoolId.Value));
+
+            }
+
+            var result = await query.Select(s => new
+            {
+                PlayerId = s.Id,
                 Email = s.Student.Email,
                 Passcode = s.Passcode,
                 Nickname = s.Nickname,
                 SchoolName = s.Student.School.Name,
                 TotalPoint = s.TotalPoint,
-                TotalTime = s.TotalTime
-            }).OrderByDescending(x => x.CreatedAt).ToListAsync();
-            return result;
+                TotalTime = s.TotalTime,
+                StudentId = s.StudentId,
+                StudentName = s.Student.Fullname,
+                EventName = s.Event.Name,
+                CreatedAt = s.CreatedAt  // Include the CreatedAt property
+            })
+            .OrderByDescending(x => x.CreatedAt)  // Order by CreatedAt
+            .ToListAsync();
+
+            // Project the result into GetPlayerWithSchoolAndEvent objects
+            var finalResult = result.Select(s => new GetPlayerWithSchoolAndEvent
+            {
+                Id = s.PlayerId,
+                StudentEmail = s.Email,
+                Passcode = s.Passcode,
+                Nickname = s.Nickname,
+                SchoolName = s.SchoolName,
+                TotalPoint = s.TotalPoint,
+                TotalTime = s.TotalTime,
+                StudentId = s.StudentId,
+                StudentName = s.StudentName,
+                EventName = s.EventName,
+                CreatedAt = s.CreatedAt  // Assign the CreatedAt property
+            }).ToList();
+
+            return finalResult;
         }
+
         public async Task<Guid> GetSchoolByPlayerId(Guid playerId)
         {
             var school = await _dbContext.Schools

@@ -12,7 +12,7 @@ namespace Service.Services.EventTaskService
 {
     public interface IEventTaskService
     {
-        Task<ServiceResponse<IEnumerable<GetEventTaskDto>>> GetEventTask();
+        Task<ServiceResponse<IEnumerable<EventTaskDto>>> GetEventTask();
         Task<ServiceResponse<EventTaskDto>> GetEventById(Guid eventId);
         Task<ServiceResponse<EventTaskDto>> GetEventTaskByTaskId(Guid taskId);
 
@@ -20,7 +20,8 @@ namespace Service.Services.EventTaskService
         Task<ServiceResponse<bool>> UpdateTaskEvent(Guid id,UpdateEventTaskDto eventTaskDto);
 
         Task<ServiceResponse<IEnumerable<GetTaskByEventIdDto>>> GetTaskByEventTaskWithEventId(Guid eventId);
-        Task<ServiceResponse<List<Guid>>> CreateNewEventTasks(CreateListEventTaskDto createEventTaskDtos);
+        Task<ServiceResponse<List<Guid>>> CreateNewEventTasks(CreateListEventTaskDto createEventTaskDtos); 
+        Task<ServiceResponse<bool>> DeleteEventTask(Guid id);
 
     }
 }

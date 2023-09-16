@@ -74,6 +74,7 @@ using Service.Services.PrizeService;
 using DataAccess.ImageSetting;
 using DataAccess.Repositories.ImageRepository;
 using Service.UpdateStatusHandler;
+using Service.Email;
 
 namespace FPTHCMAdventuresAPI
 {
@@ -113,6 +114,7 @@ namespace FPTHCMAdventuresAPI
                      TimeSpan.FromMinutes(10) 
                 )
             );
+          
             #region Repositories
             services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
             services.AddScoped<IEventRepositories, EventRepositories>();
@@ -231,6 +233,7 @@ namespace FPTHCMAdventuresAPI
             services.AddScoped<IStudentService, StudentService>();
             services.AddScoped<IPlayerPrizeService, PlayerPrizeService>();
             services.AddScoped<IPrizeService, PrizeService>();
+            services.AddTransient<IEmailSender, EmailSender>();
             #endregion
 
             services.AddHealthChecks()
@@ -241,6 +244,7 @@ namespace FPTHCMAdventuresAPI
             {
                 opt.SetEvaluationTimeInSeconds(15); //time in seconds between check
             }).AddInMemoryStorage();
+            services.Configure<EmailSettings>(Configuration.GetSection("EmailSettings"));
 
         }
 
