@@ -18,6 +18,7 @@ namespace Service.Services.SchoolEventService
         Task<ServiceResponse<bool>> UpdateSchoolEventByStartTimeAndEndTime(Guid id, UpdateSchoolEventDto schoolEventDto);
         Task<ServiceResponse<List<GetSchoolByEventIdDto>>> GetSchoolByEventId(Guid eventid);
         Task<ServiceResponse<List<Guid>>> CreateNewSchoolEventList(CreateListSchoolEvent createEventTaskDtos);
+        Task<ServiceResponse<bool>> DeleteSchoolEvent(Guid id);
 
     }
 }

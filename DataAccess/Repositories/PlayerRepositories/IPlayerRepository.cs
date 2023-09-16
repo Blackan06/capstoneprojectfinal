@@ -13,7 +13,8 @@ namespace DataAccess.Repositories.PlayerRepositories
     public interface IPlayerRepository : IGenericRepository<Player>
     {
       
-        Task<IEnumerable<PlayerDto>> GetRankedPlayer(Guid eventid, Guid schoolId);
+        Task<IEnumerable<RankPlayer>> GetRankedPlayer(Guid eventid, Guid schoolId);
+
         Task<Guid> GetSchoolByPlayerId(Guid playerId);
         Task<Player> GetPlayerByStudentId(Guid studentId);
         Task<GetPlayerDto> GetPlayerByEventId(Guid eventId);

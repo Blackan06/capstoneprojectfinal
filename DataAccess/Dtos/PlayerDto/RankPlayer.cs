@@ -14,7 +14,7 @@ namespace DataAccess.Dtos.PlayerDto
         public Guid EventId { get; set; }
         public string StudentName { get; set; }
         public string SchoolName { get; set; }
-
+        public int? RankNumber { get; set; }
         public string StudentEmail { get; set; }
         public string EventName { get; set; }
         public string Nickname { get; set; }
@@ -24,5 +24,7 @@ namespace DataAccess.Dtos.PlayerDto
         public double TotalPoint { get; set; }
         public double TotalTime { get; set; }
         public bool Isplayer { get; set; }
+        public Guid PrizedId { get; set; }
+        public string PrizedName { get; set; }
     }
 }

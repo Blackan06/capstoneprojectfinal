@@ -26,12 +26,14 @@ namespace Service.Services.StudentService
     {
         private readonly IStudentRepositories _studentRepository;
         private readonly ISchoolEventRepository _schoolEventRepository;
+        private readonly ISchoolRepository _schoolRepository;
         private readonly IMapper _mapper;
-        public StudentService(IStudentRepositories studentRepository, IMapper mapper, ISchoolEventRepository schoolEventRepository)
+        public StudentService(IStudentRepositories studentRepository, IMapper mapper, ISchoolEventRepository schoolEventRepository, ISchoolRepository schoolRepository)
         {
             _studentRepository = studentRepository;
             _schoolEventRepository = schoolEventRepository;
             _mapper = mapper;
+            _schoolRepository = schoolRepository;
         }
 
         public async Task<ServiceResponse<Guid>> CreateNewStudent(CreateStudentDto createStudentDto)
@@ -218,13 +220,13 @@ namespace Service.Services.StudentService
             }
         }
 
-        public async Task<ServiceResponse<IEnumerable<StudentDto>>> GetStudentBySchoolId(Guid id)
+        public async Task<ServiceResponse<IEnumerable<GetStudentBySchoolAndEvent>>> GetStudentBySchoolId(Guid id)
         {
             var studentList = await _studentRepository.GetStudentBySchoolId(id);
 
             if (studentList != null)
             {
-                return new ServiceResponse<IEnumerable<StudentDto>>
+                return new ServiceResponse<IEnumerable<GetStudentBySchoolAndEvent>>
                 {
                     Data = studentList,
                     Success = true,
@@ -234,7 +236,7 @@ namespace Service.Services.StudentService
             }
             else
             {
-                return new ServiceResponse<IEnumerable<StudentDto>>
+                return new ServiceResponse<IEnumerable<GetStudentBySchoolAndEvent>>
                 {
                     Data = studentList,
                     Success = false,
@@ -562,6 +564,178 @@ namespace Service.Services.StudentService
             return dateTime;
         }
 
-      
+        public async Task<ServiceResponse<string>> ImportDataFromExcelStudentWithSchoolId(IFormFile file, Guid schoolId)
+        {
+            var checkSchoolId = await _schoolRepository.GetById(schoolId);
+            var dateTimeNow = TimeZoneVietName(DateTime.UtcNow);
+            if (checkSchoolId == null)
+            {
+                return new ServiceResponse<string>
+                {
+                    Data = null,
+                    Message = "Not found school",
+                    Success = false,
+                    StatusCode = 400
+                };
+            }
+
+            else
+            {
+                // Kiểm tra nếu không có file hoặc kích thước file <= 0
+                if (file == null || file.Length <= 0)
+                {
+                    return new ServiceResponse<string>
+                    {
+                        Data = null,
+                        Message = "No file uploaded.",
+                        Success = false,
+                        StatusCode = 400
+                    };
+                }
+
+                // Kiểm tra định dạng file
+                if (file.ContentType != "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                {
+                    return new ServiceResponse<string>
+                    {
+                        Data = null,
+                        Message = "Invalid file format. Only Excel files are allowed.",
+                        Success = false,
+                        StatusCode = 400
+                    };
+                }
+
+                try
+                {
+                    using (var stream = new MemoryStream())
+                    {
+                        await file.CopyToAsync(stream);
+                        using (var package = new ExcelPackage(stream))
+                        {
+                            var worksheet = package.Workbook.Worksheets.FirstOrDefault();
+                            if (worksheet == null || worksheet.Dimension == null || worksheet.Dimension.Rows <= 1)
+                            {
+                                return new ServiceResponse<string>
+                                {
+                                    Data = null,
+                                    Message = "Excel file does not contain data starting from row 2.",
+                                    Success = false,
+                                    StatusCode = 400
+                                };
+                            }
+                            else
+                            {
+                                var rowCount = worksheet.Dimension.Rows;
+                                var dataList = new List<GetStudentDto>();
+                                var errorMessages = new List<string>();
+
+                                var importedEmails = new HashSet<string>();
+                                var importedPhoneNumbers = new HashSet<string>();
+                                var headerRow = worksheet.Cells[1, 1, 1, worksheet.Dimension.Columns];
+                                var expectedHeaders = new List<string>
+                                {
+                                "FULL NAME", "EMAIL",  "GRADUATE YEAR", "PHONE NUMBER", "CLASS NAME"
+                                };
+
+                                // Kiểm tra tên cột trong tệp Excel
+                                foreach (var cell in headerRow)
+                                {
+                                    if (!expectedHeaders.Contains(cell.Text.Trim()))
+                                    {
+                                        return new ServiceResponse<string>
+                                        {
+                                            Data = null,
+                                            Message = "Invalid column names in the Excel file.",
+                                            Success = false,
+                                            StatusCode = 400
+                                        };
+                                    }
+                                }
+                                for (int row = 2; row <= rowCount; row++)
+                                {
+                                    var data = new GetStudentDto
+                                    {
+                                        // Khởi tạo dữ liệu từ các ô trong tệp Excel
+                                        Id = Guid.NewGuid(),
+                                        SchoolId = checkSchoolId.Id,
+                                        Fullname = worksheet.Cells[row, 1].Text.Trim(),
+                                        Email = worksheet.Cells[row, 2].Text.Trim(),
+                                        GraduateYear = int.Parse(worksheet.Cells[row, 3].Text.Trim()),
+                                        Phonenumber = worksheet.Cells[row, 4].Text.Trim(),
+                                        Classname = worksheet.Cells[row, 5].Text.Trim(),
+                                        CreatedAt = TimeZoneVietName(DateTime.UtcNow),
+                                        Status = "ACTIVE"
+                                    };
+
+                                    // Kiểm tra tính hợp lệ của dữ liệu
+                                    if (string.IsNullOrEmpty(data.Fullname))
+                                    {
+                                        errorMessages.Add($"Row {row}: Fullname is required.");
+                                    }
+                                    var emailExists = await _studentRepository.ExistsAsync(s => s.Email == data.Email);
+
+                                    if (string.IsNullOrEmpty(data.Email) || !IsValidEmail(data.Email) || importedEmails.Equals(data.Email) || emailExists)
+                                    {
+                                        errorMessages.Add($"Row {row}: Invalid or duplicate email.");
+                                    }
+                                    else
+                                    {
+                                        importedEmails.Add(data.Email);
+                                    }
+                                    var phoneNumberExists = await _studentRepository.ExistsAsync(s => s.Phonenumber == long.Parse(data.Phonenumber));
+
+                                    if (string.IsNullOrEmpty(data.Phonenumber) || importedPhoneNumbers.Equals(data.Phonenumber) || phoneNumberExists)
+                                    {
+                                        errorMessages.Add($"Row {row}: Invalid or duplicate phone number.");
+                                    }
+                                    else
+                                    {
+                                        importedPhoneNumbers.Add(data.Phonenumber);
+                                    }
+
+                                    // Xử lý dữ liệu và thêm vào danh sách
+                                    dataList.Add(data);
+                                }
+
+                                // Kiểm tra lỗi
+                                if (errorMessages.Any())
+                                {
+                                    return new ServiceResponse<string>
+                                    {
+                                        Data = null,
+                                        Message = string.Join("\n", errorMessages),
+                                        Success = false,
+                                        StatusCode = 400
+                                    };
+                                }
+
+                                // Tiến hành lưu dữ liệu vào cơ sở dữ liệu
+                                var locations = _mapper.Map<List<Student>>(dataList);
+                                await _studentRepository.AddRangeAsync(locations);
+                                await _studentRepository.SaveChangesAsync();
+
+                                return new ServiceResponse<string>
+                                {
+                                    Data = "Upload successful.",
+                                    Success = true,
+                                    StatusCode = 200
+                                };
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    return new ServiceResponse<string>
+                    {
+                        Data = ex.Message,
+                        Message = "Failed to process uploaded file.",
+                        Success = false,
+                        StatusCode = 500
+                    };
+                }
+            }
+
+        }
     }
 }

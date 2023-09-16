@@ -11,7 +11,6 @@ namespace BusinessObjects.Model
         {
             EventTasks = new HashSet<EventTask>();
             Players = new HashSet<Player>();
-            Prizes = new HashSet<Prize>();
             SchoolEvents = new HashSet<SchoolEvent>();
         }
 
@@ -22,7 +21,6 @@ namespace BusinessObjects.Model
 
         public virtual ICollection<EventTask> EventTasks { get; set; }
         public virtual ICollection<Player> Players { get; set; }
-        public virtual ICollection<Prize> Prizes { get; set; }
         public virtual ICollection<SchoolEvent> SchoolEvents { get; set; }
     }
 }

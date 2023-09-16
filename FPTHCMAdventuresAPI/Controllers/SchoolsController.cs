@@ -146,5 +146,19 @@ namespace FPTHCMAdventuresAPI.Controllers
             }
 
         }
+        [HttpDelete("deleteschool")]
+        public async Task<ActionResult<ServiceResponse<ItemDto>>> DeleteSchool(Guid id)
+        {
+            try
+            {
+                var disableEvent = await _schoolService.DeleteSchool(id);
+                return Ok(disableEvent);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Internal server error: " + ex.Message);
+            }
+
+        }
     }
 }

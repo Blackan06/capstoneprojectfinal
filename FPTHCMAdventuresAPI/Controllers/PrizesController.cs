@@ -10,6 +10,9 @@ using System;
 using Microsoft.AspNetCore.Authorization;
 using Service.Services.PrizeService;
 using DataAccess.Dtos.PrizeDto;
+using DataAccess.Dtos.ItemDto;
+using DocumentFormat.OpenXml.Office2010.ExcelAc;
+using System.Collections.Generic;
 
 namespace FPTHCMAdventuresAPI.Controllers
 {
@@ -67,9 +70,9 @@ namespace FPTHCMAdventuresAPI.Controllers
             return Ok(eventDetail);
         }
 
-        [HttpPost("Gift", Name = "CreateNewGift")]
+        [HttpPost("Gift", Name = "CreateNewGift/{eventId}/{schoolId}")]
 
-        public async Task<ActionResult<ServiceResponse<GetPrizeDto>>> CreateNewGift( CreatePrizeDto createPrizeDto)
+        public async Task<ActionResult<ServiceResponse<GetPrizeDto>>> CreateNewGift(CreatePrizeDto createPrizeDto)
         {
             try
             {
@@ -78,6 +81,30 @@ namespace FPTHCMAdventuresAPI.Controllers
                     return BadRequest(ModelState);
                 }
                 var res = await _prizeService.CreateNewPrize(createPrizeDto);
+                if (!res.Success)
+                {
+                    return BadRequest(res);
+                }
+                return Ok(res);
+            }
+            catch (Exception ex)
+            {
+
+                return StatusCode(500, "Internal server error: " + ex.Message);
+            }
+        }
+        [HttpPost]
+        [Route("CreateNewListPrize/{eventId}/{schoolId}")]
+
+        public async Task<ActionResult<ServiceResponse<List<CreatePrizeDto>>>> CreateNewListGift(List<CreatePrizeDto> createPrizeDto)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+                var res = await _prizeService.CreateMultiplePrizes(createPrizeDto);
                 if (!res.Success)
                 {
                     return BadRequest(res);
@@ -120,6 +147,20 @@ namespace FPTHCMAdventuresAPI.Controllers
             try
             {
                 var disableEvent = await _prizeService.DisablePrize(id);
+                return Ok(disableEvent);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Internal server error: " + ex.Message);
+            }
+
+        }
+        [HttpDelete("deleteprize")]
+        public async Task<ActionResult<ServiceResponse<ItemDto>>> DeletePrize(Guid id)
+        {
+            try
+            {
+                var disableEvent = await _prizeService.DeletePrize(id);
                 return Ok(disableEvent);
             }
             catch (Exception ex)

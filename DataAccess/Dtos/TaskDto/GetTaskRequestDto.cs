@@ -12,7 +12,7 @@ namespace DataAccess.Dtos.TaskDto
         public Guid EventtaskId { get; set; }
         public string LocationName { get; set; }
         public string MajorName { get; set; }
-        public Guid MajorId{ get; set; }
+        public Guid? MajorId{ get; set; }
         public string NpcName { get; set; }
         public Guid? ItemId { get; set; }
         public string? ItemName { get; set; }

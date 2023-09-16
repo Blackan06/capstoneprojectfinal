@@ -32,21 +32,21 @@ namespace DataAccess.Repositories.StudentRepositories
             return await _dbContext.Students.Select(s => s.Phonenumber.ToString()).ToListAsync();
         }
 
-        public async Task<IEnumerable<StudentDto>> GetStudentBySchoolId(Guid SchoolId)
+        public async Task<IEnumerable<GetStudentBySchoolAndEvent>> GetStudentBySchoolId(Guid SchoolId)
         {
-            var students = await _dbContext.Students.Include(x => x.School).Where(s => s.SchoolId.Equals(SchoolId)).Select(x=>new StudentDto
+            var students = await _dbContext.Students.Include(x => x.School).Where(s => s.SchoolId.Equals(SchoolId)).OrderByDescending(x => x.CreatedAt).Select(x=>new GetStudentBySchoolAndEvent
             {
                 Id = x.Id,
-                Schoolname=x.School.Name,
-                Fullname=x.Fullname,
-                Email=x.Email,
-                Phonenumber=x.Phonenumber,
-                GraduateYear=x.GraduateYear,
-                Classname=x.Classname,
-                Status=x.Status
+                Passcode = x.Player != null ? (x.Player.Passcode ?? "N/A") : "N/A",
+                Schoolname = x.School.Name,
+                Fullname = x.Fullname,
+                Email = x.Email,
+                Phonenumber = x.Phonenumber,
+                GraduateYear = x.GraduateYear,
+                Classname = x.Classname,
+                Status = x.Status
             }).ToListAsync();
-            var studentDtos = _mapper.Map<IEnumerable<StudentDto>>(students);
-            return studentDtos;
+            return students;
         }
 
         public async Task<IEnumerable<GetStudentBySchoolAndEvent>> GetStudentByEventSchoolId(Guid schoolEventId)

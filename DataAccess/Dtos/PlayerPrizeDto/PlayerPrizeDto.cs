@@ -11,6 +11,9 @@ namespace DataAccess.Dtos.PlayerPrizeDto
     {
         public string PrizeName { get; set; }
         public string PlayerName { get; set; }
+        public DateTime DateReceived { get; set; }
+        public string Status { get; set; }
+
         [JsonIgnore]
         public DateTime CreatedAt { get; set; }
     }

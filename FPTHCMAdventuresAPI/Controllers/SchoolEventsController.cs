@@ -11,6 +11,7 @@ using DataAccess.Dtos.SchoolDto;
 using DataAccess.Dtos.PlayerDto;
 using System.Collections.Generic;
 using DataAccess.Dtos.EventTaskDto;
+using DataAccess.Dtos.ItemDto;
 
 namespace FPTHCMAdventuresAPI.Controllers
 {
@@ -135,7 +136,20 @@ namespace FPTHCMAdventuresAPI.Controllers
                 return StatusCode(500, "Internal server error: " + ex.Message);
             }
         }
+        [HttpDelete("deleteschoolevent")]
+        public async Task<ActionResult<ServiceResponse<ItemDto>>> DeleteSchoolEvent(Guid id)
+        {
+            try
+            {
+                var disableEvent = await _schoolEventService.DeleteSchoolEvent(id);
+                return Ok(disableEvent);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Internal server error: " + ex.Message);
+            }
 
+        }
         [HttpPost("createlistschoolevent")]
         public async Task<IActionResult> CreateListEventTask([FromBody] CreateListSchoolEvent createListschoolEvent)
         {

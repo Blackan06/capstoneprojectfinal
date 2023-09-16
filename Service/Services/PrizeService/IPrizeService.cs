@@ -17,6 +17,9 @@ namespace Service.Services.PrizeService
         Task<ServiceResponse<bool>> UpdatePrize(Guid id, UpdatePrizeDto giftDto);
         Task<ServiceResponse<string>> GetTotalPrize();
         Task<ServiceResponse<bool>> DisablePrize(Guid id);
+        Task<ServiceResponse<bool>> DeletePrize(Guid id);
+        Task<ServiceResponse<List<Guid>>> CreateMultiplePrizes(List<CreatePrizeDto> createPrizes);
+
 
 
     }

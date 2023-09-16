@@ -56,5 +56,17 @@ namespace DataAccess.Repositories.SchoolEventRepositories
             var schoolEventDto = _mapper.Map<SchoolEventDto>(schoolEvent);
             return schoolEventDto;
         }
+
+        public async Task<SchoolEventDto> GetSchoolEventBySchoolIdAndEventId(Guid schoolId, Guid eventId)
+        {
+            var schoolEvent = await _dbContext.SchoolEvents.Include(x => x.School).Include(x => x.Event).Where(x => x.SchoolId == schoolId && x.EventId == eventId).FirstOrDefaultAsync();
+
+            if(schoolEvent == null)
+            {
+                return null;
+            }
+            var schoolEventDto = _mapper.Map<SchoolEventDto>(schoolEvent);
+            return schoolEventDto;
+        }
     }
 }

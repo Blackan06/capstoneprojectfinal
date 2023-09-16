@@ -43,7 +43,7 @@ namespace FPTHCMAdventuresAPI.Controllers
 
         [HttpGet("GetStudentBySchoolId/{schoolId}")]
 
-        public async Task<ActionResult<ServiceResponse<StudentDto>>> GetStudentListBySchoolId(Guid schoolId)
+        public async Task<ActionResult<ServiceResponse<GetStudentBySchoolAndEvent>>> GetStudentListBySchoolId(Guid schoolId)
         {
             try
             {
@@ -136,6 +136,23 @@ namespace FPTHCMAdventuresAPI.Controllers
         public async Task<IActionResult> UploadExcel(IFormFile file,Guid schooleventId)
         {
             var serviceResponse = await _studentService.ImportDataFromExcel(file, schooleventId);
+
+            if (serviceResponse.Success)
+            {
+                // Xử lý thành công
+                return Ok(serviceResponse.Message);
+            }
+            else
+            {
+                // Xử lý lỗi
+                return BadRequest(serviceResponse.Message);
+            }
+        }
+        [HttpPost]
+        [Route("uploadfileexcelstudentwithschoolId")]
+        public async Task<IActionResult> UploadExcelStudentWithSchoolId(IFormFile file,Guid schoolId)
+        {
+            var serviceResponse = await _studentService.ImportDataFromExcelStudentWithSchoolId(file, schoolId);
 
             if (serviceResponse.Success)
             {

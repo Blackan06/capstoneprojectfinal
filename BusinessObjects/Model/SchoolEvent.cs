@@ -7,6 +7,11 @@ namespace BusinessObjects.Model
 {
     public partial class SchoolEvent
     {
+        public SchoolEvent()
+        {
+            Prizes = new HashSet<Prize>();
+        }
+
         public Guid Id { get; set; }
         public Guid EventId { get; set; }
         public Guid SchoolId { get; set; }
@@ -18,5 +23,6 @@ namespace BusinessObjects.Model
 
         public virtual Event Event { get; set; }
         public virtual School School { get; set; }
+        public virtual ICollection<Prize> Prizes { get; set; }
     }
 }

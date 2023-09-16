@@ -39,6 +39,8 @@ namespace Service.Services.PlayerService
 
         public async Task<ServiceResponse<Guid>> CreateNewPlayer(CreatePlayerDto createPlayerDto)
         {
+            var student = await _studentRepository.GetById(createPlayerDto.StudentId);
+
             if (await _playerRepository.ExistsAsync(s => s.Passcode == createPlayerDto.Passcode))
             {
                 return new ServiceResponse<Guid>
@@ -66,9 +68,11 @@ namespace Service.Services.PlayerService
             }
             else
             {
-                createPlayerDto.Nickname = "null";
+                int atIndex = student.Email.IndexOf('@');
+
+                createPlayerDto.Nickname = student.Email.Substring(0, atIndex);
                 createPlayerDto.CreatedAt = TimeZoneVietName(DateTime.UtcNow);
-                createPlayerDto.TotalPoint = 0;
+                createPlayerDto.TotalPoint = 100;
                 createPlayerDto.TotalTime = 0;
                 createPlayerDto.Passcode = Guid.NewGuid().ToString("N").Substring(0, 8);
                 createPlayerDto.IsPlayer = false;
@@ -105,6 +109,8 @@ namespace Service.Services.PlayerService
 
             foreach (var studentId in listPlayerDto.StudentId)
             {
+                var student = await _studentRepository.GetById(studentId);
+
                 if (await _playerRepository.ExistsAsync(t => t.EventId == listPlayerDto.EventId && t.StudentId == studentId))
                 {
                     return new ServiceResponse<List<Guid>>
@@ -118,11 +124,12 @@ namespace Service.Services.PlayerService
                 int desiredLength = new Random().Next(8, 11); 
                 string guidString = Guid.NewGuid().ToString("N"); 
                 string passcode = guidString.Substring(0, desiredLength);
+                int atIndex = student.Email.IndexOf('@');
 
                 var playerdto = new PlayerDto
                 {
                     StudentId = studentId,
-                    Nickname = "null",
+                    Nickname = student.Email.Substring(0, atIndex),
                     Isplayer = false,
                     Passcode = passcode,
                     TotalPoint = 0,
@@ -153,7 +160,7 @@ namespace Service.Services.PlayerService
                 List<Expression<Func<Player, object>>> includes = new List<Expression<Func<Player, object>>>
                 {
                   
-                    x => x.Inventories,
+                    x => x.Inventory,
                     x => x.ExchangeHistories,
                     
                 };
@@ -289,7 +296,7 @@ namespace Service.Services.PlayerService
             {
                 List<Expression<Func<Player, object>>> includes = new List<Expression<Func<Player, object>>>
                 {
-                    x => x.Inventories,
+                    x => x.Inventory,
                     x => x.ExchangeHistories,
                 };
                 var taskDetail = await _playerRepository.GetByWithCondition(x => x.StudentId == studentId, includes, true);
@@ -429,7 +436,7 @@ namespace Service.Services.PlayerService
             }
         }
 
-        public async Task<ServiceResponse<IEnumerable<PlayerDto>>> GetRankedPlayer(Guid eventId, Guid schoolId)
+        public async Task<ServiceResponse<IEnumerable<RankPlayer>>> GetRankedPlayer(Guid eventId, Guid schoolId)
         {
             try
             {
@@ -439,14 +446,14 @@ namespace Service.Services.PlayerService
                 if (eventDetail == null)
                 {
 
-                    return new ServiceResponse<IEnumerable<PlayerDto>>
+                    return new ServiceResponse<IEnumerable<RankPlayer>>
                     {
                         Message = "No rows",
                         StatusCode = 200,
                         Success = true
                     };
                 }
-                return new ServiceResponse<IEnumerable<PlayerDto>>
+                return new ServiceResponse<IEnumerable<RankPlayer>>
                 {
                     Data = eventDetail,
                     Message = "Successfully",

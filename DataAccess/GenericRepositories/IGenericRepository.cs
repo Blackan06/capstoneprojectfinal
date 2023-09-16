@@ -26,7 +26,7 @@ namespace DataAccess.GenericRepositories
         Task Delete(T obj);
         Task Update(T obj);
         Task Save();
-
+        Task CreateAsync(T entity);
         Task<T> GetAsync(Guid? id);
         Task<TResult> GetAsync<TResult>(Guid? id);
         Task<List<T>> GetAllAsync();

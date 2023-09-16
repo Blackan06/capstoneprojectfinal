@@ -8,7 +8,10 @@ namespace DataAccess.Dtos.PlayerPrizeDto
     {
         private Guid prizeId;
         private Guid playerId;
+        private DateTime dateReceived;
         private DateTime createdAt;
+        private string status;
+
 
         [Required]
         public Guid PrizeId
@@ -16,6 +19,7 @@ namespace DataAccess.Dtos.PlayerPrizeDto
             get { return prizeId; }
             set { prizeId = value; }
         }
+      
 
         [Required]
         public Guid PlayerId
@@ -30,6 +34,19 @@ namespace DataAccess.Dtos.PlayerPrizeDto
         {
             get { return createdAt; }
             set { createdAt = value; }
+        }
+        [Required]
+
+        public DateTime DateReceived
+        {
+            get { return dateReceived; }
+            set { dateReceived = value; }
+        }
+        [RegularExpression("^(RECEIVED|PENDING|NOT RECEIVED)$", ErrorMessage = "Status must be 'RECEIVED' or 'PENDING' or 'NOT RECEIVED'.")]
+        public string Status
+        {
+            get { return status; }
+            set { status = value; }
         }
     }
 }

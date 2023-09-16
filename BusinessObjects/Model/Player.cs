@@ -10,7 +10,6 @@ namespace BusinessObjects.Model
         public Player()
         {
             ExchangeHistories = new HashSet<ExchangeHistory>();
-            Inventories = new HashSet<Inventory>();
             PlayerHistories = new HashSet<PlayerHistory>();
             PlayerPrizes = new HashSet<PlayerPrize>();
         }
@@ -27,8 +26,8 @@ namespace BusinessObjects.Model
 
         public virtual Event Event { get; set; }
         public virtual Student Student { get; set; }
+        public virtual Inventory Inventory { get; set; }
         public virtual ICollection<ExchangeHistory> ExchangeHistories { get; set; }
-        public virtual ICollection<Inventory> Inventories { get; set; }
         public virtual ICollection<PlayerHistory> PlayerHistories { get; set; }
         public virtual ICollection<PlayerPrize> PlayerPrizes { get; set; }
     }

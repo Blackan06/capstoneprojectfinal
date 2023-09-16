@@ -8,10 +8,29 @@ namespace DataAccess.Dtos.PlayerHistoryDto
 {
     public class PlayerHistoryDto 
     {
+        public Guid Id { get; set; }
         public Guid EventtaskId { get; set; }
+        public Guid PlayerId { get; set; }
+        public Guid TaskId { get; set; }
+        public Guid? MajorId { get; set; }
+        public string MajorName { get; set; }
+        public string TaskName { get; set; }
         public string PlayerNickName { get; set; }
-        public double CompletedTime { get; set; }
-        public double TaskPoint { get; set; }
+        public double? CompletedTime { get; set; }
+        public double? TaskPoint { get; set; }
         public string Status { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public Guid StudentId { get; set; }
+        public Guid EventId { get; set; }
+        public string StudentName { get; set; }
+        public string SchoolName { get; set; }
+
+        public string StudentEmail { get; set; }
+        public string EventName { get; set; }
+        public string Passcode { get; set; }
+       
+        public double TotalPoint { get; set; }
+        public double TotalTime { get; set; }
+        public bool Isplayer { get; set; }
     }
 }

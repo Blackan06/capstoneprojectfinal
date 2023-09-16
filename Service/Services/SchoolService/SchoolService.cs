@@ -272,5 +272,27 @@ namespace Service.Services.SchoolService
                 };
             }
         }
+
+        public async Task<ServiceResponse<bool>> DeleteSchool(Guid id)
+        {
+            var check = await _schoolRepository.GetById(id);
+            if(check != null)
+            {
+                await _schoolRepository.DeleteAsync(id);
+                return new ServiceResponse<bool>
+                {
+                    Data = true,
+                    Message = "SUCCESS",
+                    StatusCode = 204,
+                    Success = true
+                };
+            }
+            return new ServiceResponse<bool>
+            {
+                Data = false,
+                Message = "FAILED",
+                Success = false
+            };
+        }
     }
 }

@@ -11,7 +11,7 @@ namespace DataAccess.Repositories.StudentRepositories
 {
     public interface IStudentRepositories : IGenericRepository<Student>
     {
-        Task<IEnumerable<StudentDto>> GetStudentBySchoolId(Guid SchoolId);
+        Task<IEnumerable<GetStudentBySchoolAndEvent>> GetStudentBySchoolId(Guid SchoolId);
         Task<IEnumerable<GetStudentBySchoolAndEvent>> GetStudentByEventSchoolId(Guid schoolEventId);
         Task<List<string>> GetExistingEmails();
         Task<List<string>> GetExistingPhoneNumbers();

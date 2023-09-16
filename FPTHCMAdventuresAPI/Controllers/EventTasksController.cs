@@ -12,6 +12,7 @@ using System;
 using DataAccess.Dtos.EventTaskDto;
 using Microsoft.AspNetCore.Authorization;
 using DataAccess.Dtos.TaskDto;
+using DataAccess.Dtos.ItemDto;
 
 namespace FPTHCMAdventuresAPI.Controllers
 {
@@ -68,6 +69,10 @@ namespace FPTHCMAdventuresAPI.Controllers
                 return BadRequest(ModelState);
             }
             var response = await _eventTaskService.CreateNewEventTasks(createListEventTask);
+            if (!response.Success)
+            {
+                return BadRequest(response);
+            }
             return Ok(response);
         }
         [HttpPost("eventtask", Name = "CreateNewEventTask")]
@@ -132,6 +137,21 @@ namespace FPTHCMAdventuresAPI.Controllers
 
                 return StatusCode(500, "Internal server error: " + ex.Message);
             }
+        }
+
+        [HttpDelete("deleteeventtask")]
+        public async Task<ActionResult<ServiceResponse<ItemDto>>> DeleteEventTask(Guid id)
+        {
+            try
+            {
+                var disableEvent = await _eventTaskService.DeleteEventTask(id);
+                return Ok(disableEvent);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Internal server error: " + ex.Message);
+            }
+
         }
     }
 }
