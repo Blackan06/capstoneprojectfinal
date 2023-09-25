@@ -90,7 +90,16 @@ namespace DataAccess.Repositories.EventRepositories
             return getTaskAndEventDto;
         }
 
+        public async Task<List<string>> GetExistingNamesAsync(List<string> namesToCheck)
+        {
+            // Thực hiện truy vấn để lấy danh sách các tên từ cơ sở dữ liệu
+            var existingNames = await _dbContext.Events
+                .Where(e => namesToCheck.Contains(e.Name))
+                .Select(e => e.Name)
+                .ToListAsync();
 
+            return existingNames;
+        }
         public DateTime ConvertToVietnamTime(DateTime dateTimeUtc)
         {
             TimeZoneInfo vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");

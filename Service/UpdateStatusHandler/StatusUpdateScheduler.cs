@@ -32,7 +32,7 @@ namespace Service.UpdateStatusHandler
 
                     var currentTime = DateTime.UtcNow;
                    
-                    var activeEventSchools = await dbContext.SchoolEvents
+                    var activeEventSchools = await dbContext.SchoolEvents.Include(x => x.School).ThenInclude(x => x.Students).ThenInclude(x => x.Player)
                                                     .Where(a => a.EndTime <= TimeZoneVietName(currentTime) && a.Status != "INACTIVE")
                                                     .ToListAsync();
 
@@ -41,7 +41,6 @@ namespace Service.UpdateStatusHandler
                     {
                         schoolEvent.Status = "INACTIVE";
                         await dbContext.SaveChangesAsync();
-
                     }
 
                 }

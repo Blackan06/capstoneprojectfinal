@@ -14,5 +14,6 @@ namespace DataAccess.Repositories.EventRepositories
     {
 
         Task<GetTaskAndEventDto> GetTaskAndEventListByTimeNow(Guid schoolId);
+        Task<List<string>> GetExistingNamesAsync(List<string> namesToCheck);
     }
 }

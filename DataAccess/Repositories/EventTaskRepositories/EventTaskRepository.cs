@@ -57,13 +57,18 @@ namespace DataAccess.Repositories.EventTaskRepositories
                 .Include(x => x.Task).ThenInclude(x => x.Major)
                 .Where(x => x.EventId == eventId)
                 .ToListAsync();
-            
+            bool checkMajor = eventTasks.Any(i => i.Task.MajorId == majorId);   
+            if(checkMajor == false)
+            {
+                maxPriorityByType = 0;
+            }
+
             foreach (var eventTask in eventTasks)
             {
 
                 if (eventTask.Task != null && eventTask.Task.Major != null && eventTask.Task.Major.Id == majorId)
                 {
-                    maxPriorityByType++;
+                    maxPriorityByType = eventTask.Priority;
                 }
             }
 

@@ -208,7 +208,6 @@ namespace Service.Services.EventService
 
         public async Task<ServiceResponse<string>> ImportDataFromExcel(IFormFile file)
         {
-
             if (file == null || file.Length <= 0)
             {
                 return new ServiceResponse<string>
@@ -230,6 +229,7 @@ namespace Service.Services.EventService
                     StatusCode = 400
                 };
             }
+
             try
             {
                 using (var stream = new MemoryStream())
@@ -248,7 +248,7 @@ namespace Service.Services.EventService
                                 StatusCode = 400
                             };
                         }
-                        else 
+                        else
                         {
                             var rowCount = worksheet.Dimension.Rows;
                             var dataList = new List<EventDto>();
@@ -271,13 +271,54 @@ namespace Service.Services.EventService
                                 dataList.Add(data);
                             }
 
+                            // Kiểm tra trùng lặp tên trong danh sách dataList
+                            var duplicateNames = dataList.GroupBy(d => d.Name)
+                                .Where(g => g.Count() > 1)
+                                .Select(g => g.Key);
+
+                            if (duplicateNames.Any())
+                            {
+                                foreach (var duplicateName in duplicateNames)
+                                {
+                                    errorMessages.Add($"Duplicate name found: {duplicateName}");
+                                }
+                                return new ServiceResponse<string>
+                                {
+                                    Data = null,
+                                    Message = "Duplicate names found in the Excel file.",
+                                    Success = false,
+                                    StatusCode = 400
+                                };
+                            }
+
+                            // Kiểm tra trùng lặp tên trong cơ sở dữ liệu
+                            var existingNames = await _eventRepository.GetExistingNamesAsync(dataList.Select(d => d.Name).ToList());
+                            var duplicateDbNames = dataList
+                                .Where(d => existingNames.Contains(d.Name))
+                                .Select(d => d.Name)
+                                .ToList();
+
+                            if (duplicateDbNames.Any())
+                            {
+                                foreach (var duplicateDbName in duplicateDbNames)
+                                {
+                                    errorMessages.Add($"Duplicate name found in the database: {duplicateDbName}");
+                                }
+                                return new ServiceResponse<string>
+                                {
+                                    Data = null,
+                                    Message = "Duplicate names found in the database.",
+                                    Success = false,
+                                    StatusCode = 400
+                                };
+                            }
+
                             // Start from row 2 to skip the header row
 
                             var mapper = config.CreateMapper();
                             var locations = _mapper.Map<List<Event>>(dataList);
                             await _eventRepository.AddRangeAsync(locations);
                             await _eventRepository.SaveChangesAsync();
-
                         }
                     }
                 }
@@ -299,6 +340,7 @@ namespace Service.Services.EventService
                 };
             }
         }
+
         public byte[] GenerateExcelTemplate()
         {
             using (var package = new ExcelPackage())
