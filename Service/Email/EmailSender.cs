@@ -23,25 +23,33 @@ namespace Service.Email
 
         public async Task SendEmailAsync(EmailMessage emailMessage)
         {
-            RestClient client = new RestClient
+            try
             {
-                BaseUrl = new Uri(_emailSettings.ApiBaseUri),
-                Authenticator = new HttpBasicAuthenticator("api",_emailSettings.ApiKey),
-            };
+                using (var client = new SmtpClient())
+                {
+                    client.Host = _emailSettings.SmtpServer;
+                    client.Port = _emailSettings.Port;
+                    client.Credentials = new NetworkCredential(_emailSettings.UserName, _emailSettings.Password);
+                    client.EnableSsl = true; // Đảm bảo sử dụng SSL khi gửi email (nếu cần)
 
-            RestRequest request = new RestRequest();
-            request.AddParameter("domain", _emailSettings.Domain,ParameterType.UrlSegment);
-            request.Resource = "{domain}/messages";
-            request.AddParameter("form", _emailSettings.From);
-            request.AddParameter("to", emailMessage.To);
-            request.AddParameter("subject", emailMessage.Subject);
-            request.Method = Method.POST;
+                    var message = new MailMessage
+                    {
+                        From = new MailAddress(_emailSettings.UserName),
+                        Subject = emailMessage.Subject,
+                        Body = emailMessage.Body,
+                        IsBodyHtml = true
+                    };
 
-            TaskCompletionSource<IRestResponse> taskCompletionSource = new TaskCompletionSource<IRestResponse>();
+                    message.To.Add(emailMessage.To);
 
-            client.ExecuteAsync(request, r => taskCompletionSource.SetResult(r));
-
-            RestResponse restResponse = (RestResponse)(await taskCompletionSource.Task);
+                    await client.SendMailAsync(message);
+                }
+            }
+            catch (Exception ex)
+            {
+                // Xử lý các ngoại lệ hoặc ghi log tùy theo yêu cầu
+                throw ex;
+            }
         }
 
     }

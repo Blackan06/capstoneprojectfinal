@@ -367,10 +367,6 @@ namespace Service.Services.EventTaskService
 
                 }
                 index++;
-                // Determine the type of the event task (You should replace this with the actual logic to get the type)
-               
-
-                // Calculate the new priority based on the type and index
                 int newPriority = existingEventTasks + index; 
                 createEventTaskDtos.Status = "ACTIVE";
                 createEventTaskDtos.Point = createEventTaskDtos.Point;
