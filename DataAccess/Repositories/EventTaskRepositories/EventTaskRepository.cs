@@ -29,6 +29,20 @@ namespace DataAccess.Repositories.EventTaskRepositories
             _mapper = mapper;
         }
 
+        public async Task<bool> CheckEventTaskHavePlayerHistory(Guid eventTaskId)
+        {
+            var eventTask = await _dbContext.PlayerHistories.AnyAsync(x => x.EventtaskId == eventTaskId);
+            if (eventTask)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+
+            }
+        }
+
         public async Task<IEnumerable<EventTaskDto>> GetEventTaskByEventId(Guid eventId)
         {
             var eventTasks = await _dbContext.EventTasks
@@ -62,15 +76,18 @@ namespace DataAccess.Repositories.EventTaskRepositories
             {
                 maxPriorityByType = 0;
             }
-
-            foreach (var eventTask in eventTasks)
+            else
             {
-
-                if (eventTask.Task != null && eventTask.Task.Major != null && eventTask.Task.Major.Id == majorId)
+                foreach (var eventTask in eventTasks)
                 {
-                    maxPriorityByType = eventTask.Priority;
+
+                    if (eventTask.Task != null && eventTask.Task.Major != null && eventTask.Task.Major.Id == majorId)
+                    {
+                        maxPriorityByType++;
+                    }
                 }
             }
+           
 
             return maxPriorityByType;
         }

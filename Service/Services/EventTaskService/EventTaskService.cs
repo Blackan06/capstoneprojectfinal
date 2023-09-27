@@ -109,20 +109,37 @@ namespace Service.Services.EventTaskService
             var check = await _eventTaskRepository.GetById(id);
             if (check != null)
             {
-                await _eventTaskRepository.DeleteAsync(id);
-                return new ServiceResponse<bool>
+                var checkPlayerHistory = await _eventTaskRepository.CheckEventTaskHavePlayerHistory(id);
+                if (checkPlayerHistory)
                 {
-                    Data = true,
-                    Message = "SUCCESS",
-                    StatusCode = 204,
-                    Success = true
-                };
+                    return new ServiceResponse<bool>
+                    {
+                        Data = false,
+                        Message = "FAILED",
+                        Success = false,
+                        StatusCode = 400
+                    };
+                }
+                else
+                {
+                    await _eventTaskRepository.DeleteAsync(id);
+                    return new ServiceResponse<bool>
+                    {
+                        Data = true,
+                        Message = "SUCCESS",
+                        StatusCode = 204,
+                        Success = true
+                    };
+                }
+              
             }
             return new ServiceResponse<bool>
             {
                 Data = false,
                 Message = "FAILED",
-                Success = false
+                Success = false,
+                StatusCode = 400
+
             };
         }
         public async Task<ServiceResponse<IEnumerable<EventTaskDto>>> GetEventTask()
@@ -366,8 +383,6 @@ namespace Service.Services.EventTaskService
                     };
 
                 }
-                index++;
-                int newPriority = existingEventTasks + index; 
                 createEventTaskDtos.Status = "ACTIVE";
                 createEventTaskDtos.Point = createEventTaskDtos.Point;
                 createEventTaskDtos.CreatedAt = TimeZoneVietName(createEventTaskDtos.CreatedAt);
@@ -377,7 +392,7 @@ namespace Service.Services.EventTaskService
                 eventTaskCreate.StartTime = TimeSpan.Parse(createEventTaskDtos.StartTime);
                 eventTaskCreate.EndTime = TimeSpan.Parse(createEventTaskDtos.EndTime);
                 eventTaskCreate.TaskId = dto;
-                eventTaskCreate.Priority = newPriority;
+                eventTaskCreate.Priority = existingEventTasks;
                 addedEventTaskIds.Add(eventTaskCreate.Id);
                 newEventTasks.Add(eventTaskCreate);
             }

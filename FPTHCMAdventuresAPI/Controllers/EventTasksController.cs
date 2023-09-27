@@ -40,7 +40,9 @@ namespace FPTHCMAdventuresAPI.Controllers
         {
             try
             {
+                
                 var res = await _eventTaskService.GetEventTask();
+
                 return Ok(res);
             }
             catch (Exception ex)
@@ -144,7 +146,16 @@ namespace FPTHCMAdventuresAPI.Controllers
         {
             try
             {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+               
                 var disableEvent = await _eventTaskService.DeleteEventTask(id);
+                if (!disableEvent.Success)
+                {
+                    return BadRequest(disableEvent);
+                }
                 return Ok(disableEvent);
             }
             catch (Exception ex)

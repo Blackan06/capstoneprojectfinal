@@ -14,6 +14,7 @@ namespace Service.Services.ItemInventoryService
         Task<ServiceResponse<ItemInventoryDto>> GetItemInventoryById(Guid eventId);
         Task<ServiceResponse<Guid>> CreateNewItemInventory(CreateItemInventoryDto createItemInventoryDto);
         Task<ServiceResponse<bool>> UpdateItemInventory(Guid id, UpdateItemInventoryDto ItemInventoryDto);
+        Task<ServiceResponse<bool>> UpdateItemInventoryByPlayer1ToPlayer2(string playerNickName1,string playerNickName2,Guid itemId);
         Task<ServiceResponse<ItemInventoryDto>> GetItemByItemName(string itemName);
 
         Task<ServiceResponse<GetListItemInventoryByPlayer>> GetListItemInventoryByPlayer(string PlayerNickName);

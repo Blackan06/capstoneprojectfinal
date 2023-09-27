@@ -92,6 +92,7 @@ F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\NPOI.OpenXmlFormats.d
 F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\NPOI.dll
 F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\OpenAI_API.dll
 F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\BouncyCastle.Crypto.dll
+F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\RestSharp.dll
 F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\SendGrid.dll
 F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\Serilog.dll
 F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\Serilog.AspNetCore.dll
@@ -268,4 +269,3 @@ F:\FPTHCMAdventures\FPTHCMAdventuresAPI\obj\Release\net5.0\refint\FPTHCMAdventur
 F:\FPTHCMAdventures\FPTHCMAdventuresAPI\obj\Release\net5.0\FPTHCMAdventuresAPI.pdb
 F:\FPTHCMAdventures\FPTHCMAdventuresAPI\obj\Release\net5.0\FPTHCMAdventuresAPI.genruntimeconfig.cache
 F:\FPTHCMAdventures\FPTHCMAdventuresAPI\obj\Release\net5.0\ref\FPTHCMAdventuresAPI.dll
-F:\FPTHCMAdventures\FPTHCMAdventuresAPI\bin\Release\net5.0\RestSharp.dll

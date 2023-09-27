@@ -120,8 +120,12 @@ namespace DataAccess.Repositories.PlayerRepositories
                     }
                     else
                     {
-                        playerDtos[i].PrizedId = prizeLists[i].Id;
-                        playerDtos[i].PrizedName = prizeLists[i].Name;
+                      var checkPrize = prizeLists.Any(x => x.PrizeRank == i);
+                        if (checkPrize)
+                        {
+                            playerDtos[i].PrizedId = prizeLists[i].Id;
+                            playerDtos[i].PrizedName = prizeLists[i].Name;
+                        }
                     }
                    
                     
@@ -144,6 +148,44 @@ namespace DataAccess.Repositories.PlayerRepositories
                                                         .ThenInclude(s => s.School)
                                                         .ThenInclude(school => school.SchoolEvents)
                                                         .ThenInclude(schoolEvent => schoolEvent.Event);
+            if (schoolId == null && eventId == null)
+            {
+                // Trả về toàn bộ danh sách người chơi
+                var result = await query.Select(s => new
+                {
+                    PlayerId = s.Id,
+                    Email = s.Student.Email,
+                    Passcode = s.Passcode,
+                    Nickname = s.Nickname,
+                    SchoolName = s.Student.School.Name,
+                    TotalPoint = s.TotalPoint,
+                    TotalTime = s.TotalTime,
+                    StudentId = s.StudentId,
+                    StudentName = s.Student.Fullname,
+                    EventName = s.Event.Name,
+                    CreatedAt = s.CreatedAt  // Include the CreatedAt property
+                })
+                .OrderByDescending(x => x.CreatedAt)  // Order by CreatedAt
+                .ToListAsync();
+
+                // Project the result into GetPlayerWithSchoolAndEvent objects
+                var finalResult = result.Select(s => new GetPlayerWithSchoolAndEvent
+                {
+                    Id = s.PlayerId,
+                    StudentEmail = s.Email,
+                    Passcode = s.Passcode,
+                    Nickname = s.Nickname,
+                    SchoolName = s.SchoolName,
+                    TotalPoint = s.TotalPoint,
+                    TotalTime = s.TotalTime,
+                    StudentId = s.StudentId,
+                    StudentName = s.StudentName,
+                    EventName = s.EventName,
+                    CreatedAt = s.CreatedAt  // Assign the CreatedAt property
+                }).ToList();
+
+                return finalResult;
+            }
 
             if (schoolId.HasValue)
             {
@@ -160,7 +202,7 @@ namespace DataAccess.Repositories.PlayerRepositories
 
             }
 
-            var result = await query.Select(s => new
+            var filteredResult = await query.Select(s => new
             {
                 PlayerId = s.Id,
                 Email = s.Student.Email,
@@ -174,11 +216,11 @@ namespace DataAccess.Repositories.PlayerRepositories
                 EventName = s.Event.Name,
                 CreatedAt = s.CreatedAt  // Include the CreatedAt property
             })
-            .OrderByDescending(x => x.CreatedAt)  // Order by CreatedAt
-            .ToListAsync();
+       .OrderByDescending(x => x.CreatedAt)  // Order by CreatedAt
+       .ToListAsync();
 
-            // Project the result into GetPlayerWithSchoolAndEvent objects
-            var finalResult = result.Select(s => new GetPlayerWithSchoolAndEvent
+            // Project the filtered result into GetPlayerWithSchoolAndEvent objects
+            var finalFilteredResult = filteredResult.Select(s => new GetPlayerWithSchoolAndEvent
             {
                 Id = s.PlayerId,
                 StudentEmail = s.Email,
@@ -193,7 +235,8 @@ namespace DataAccess.Repositories.PlayerRepositories
                 CreatedAt = s.CreatedAt  // Assign the CreatedAt property
             }).ToList();
 
-            return finalResult;
+            return finalFilteredResult;
+
         }
 
         public async Task<Guid> GetSchoolByPlayerId(Guid playerId)

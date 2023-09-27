@@ -48,6 +48,25 @@ namespace Service.Services.SchoolService
                     StatusCode = 400
                 };
             }
+            if (await _schoolRepository.ExistsAsync(s => s.Email == createSchoolDto.Email))
+            {
+                return new ServiceResponse<Guid>
+                {
+                    Message = "Duplicated data: School with the same Email already exists.",
+                    Success = false,
+                    StatusCode = 400
+                };
+            } 
+            if (await _schoolRepository.ExistsAsync(s => s.PhoneNumber == long.Parse(createSchoolDto.PhoneNumber)))
+            {
+                return new ServiceResponse<Guid>
+                {
+                    Message = "Duplicated data: School with the same PhoneNumber already exists.",
+                    Success = false,
+                    StatusCode = 400
+                };
+            }
+           
             createSchoolDto.Address = createSchoolDto.Address.Trim();
             createSchoolDto.Name = createSchoolDto.Name.Trim();
             createSchoolDto.Email = createSchoolDto.Email.Trim();
@@ -176,6 +195,31 @@ namespace Service.Services.SchoolService
                     StatusCode = 400
                 };
             }
+            var existingSchoolWithSameAddress = await _schoolRepository.ExistsAsync(s => s.Address == schoolDto.Address && s.Id != id);
+
+            if (existingSchoolWithSameAddress)
+            {
+                return new ServiceResponse<bool>
+                {
+                    Data = false,
+                    Message = "Duplicated data: School with the same address already exists.",
+                    Success = false,
+                    StatusCode = 400
+                };
+            }
+            var existingSchoolWithSamePhoneNumber = await _schoolRepository.ExistsAsync(s => s.PhoneNumber == long.Parse(schoolDto.PhoneNumber) && s.Id != id);
+
+            if (existingSchoolWithSamePhoneNumber)
+            {
+                return new ServiceResponse<bool>
+                {
+                    Data = false,
+                    Message = "Duplicated data: School with the same phone number already exists.",
+                    Success = false,
+                    StatusCode = 400
+                };
+            } 
+            
             try
             {
                 var existingSchool = await _schoolRepository.GetById(id);
