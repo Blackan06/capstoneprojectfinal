@@ -22,32 +22,60 @@ namespace Service.UpdateStatusHandler
             _updateInterval = updateInterval;
         }
 
-        public async Task StartAsync(CancellationToken stoppingToken)
+      public async Task StartAsync(CancellationToken stoppingToken)
+{
+    while (!stoppingToken.IsCancellationRequested)
+    {
+        using (var scope = _serviceScopeFactory.CreateScope())
         {
-            while (!stoppingToken.IsCancellationRequested)
+            var dbContext = scope.ServiceProvider.GetRequiredService<db_a9c31b_capstoneContext>();
+            var currentTime = DateTime.UtcNow;
+
+            // Lấy tất cả các sự kiện trường đang hoạt động và cần được xử lý
+            var activeSchoolEvents = await dbContext.SchoolEvents
+                .Include(x => x.School.Students)
+                .ThenInclude(x => x.Player)
+                .Where(a => a.EndTime <= TimeZoneVietName(currentTime) && a.Status != "INACTIVE")
+                .ToListAsync();
+
+            foreach (var schoolEvent in activeSchoolEvents)
             {
-                using (var scope = _serviceScopeFactory.CreateScope())
+                // Đánh dấu sự kiện là "INACTIVE" sau khi xử lý
+                schoolEvent.Status = "INACTIVE";
+
+                foreach (var student in schoolEvent.School.Students)
                 {
-                    var dbContext = scope.ServiceProvider.GetRequiredService<db_a9c31b_capstoneContext>();
+                    var player = student.Player;
 
-                    var currentTime = DateTime.UtcNow;
-                   
-                    var activeEventSchools = await dbContext.SchoolEvents.Include(x => x.School).ThenInclude(x => x.Students).ThenInclude(x => x.Player)
-                                                    .Where(a => a.EndTime <= TimeZoneVietName(currentTime) && a.Status != "INACTIVE")
-                                                    .ToListAsync();
-
-
-                    foreach (var schoolEvent in activeEventSchools)
+                    if (player != null)
                     {
-                        schoolEvent.Status = "INACTIVE";
-                        await dbContext.SaveChangesAsync();
-                    }
+                        // Cập nhật điểm và thời gian của người chơi
+                        player.TotalPoint = 0;
+                        player.TotalTime = 0;
 
+                        // Lấy danh sách các mục cần xóa trong bảng ItemInventory của người chơi
+                        var itemsToDelete = await dbContext.ItemInventories
+                            .Where(x => x.Inventory.PlayerId == player.Id)
+                            .ToListAsync();
+
+                        if (itemsToDelete.Count > 0)
+                        {
+                            // Xóa các mục khỏi cơ sở dữ liệu
+                            dbContext.ItemInventories.RemoveRange(itemsToDelete);
+                            await dbContext.SaveChangesAsync();
+                        }
+                    }
                 }
 
-                await Task.Delay(_updateInterval, stoppingToken); // Khoảng thời gian cập nhật
+                // Lưu thay đổi trạng thái của sự kiện
+                await dbContext.SaveChangesAsync();
             }
         }
+
+        await Task.Delay(_updateInterval, stoppingToken); // Khoảng thời gian cập nhật
+    }
+}
+
         private DateTime TimeZoneVietName(DateTime dateTime)
         {
             TimeZoneInfo vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");

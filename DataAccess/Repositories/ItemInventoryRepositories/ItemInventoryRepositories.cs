@@ -47,6 +47,58 @@ namespace DataAccess.Repositories.ItemInventoryRepositories
             return itemDto;
         }
 
+        public async Task<ItemInventory> GetItemInventoryByPlayer(string playerNickName, Guid itemId)
+        {
+            var player = await _dbContext.Players
+                           .Where(e => e.Nickname == playerNickName)
+                           .Include(e => e.Inventory).ThenInclude(inventory => inventory.ItemInventories).ThenInclude(x => x.Item)
+                           .FirstOrDefaultAsync();
+
+            if (player == null)
+            {
+                return null; // Xử lý khi không tìm thấy người chơi
+            }
+            else
+            {
+                var checkItemInventoryByItemId = await _dbContext.ItemInventories.Include(x => x.Inventory).Where(x => x.ItemId == itemId && x.InventoryId == player.Inventory.Id).FirstOrDefaultAsync();
+                if (checkItemInventoryByItemId == null)
+                {
+                    return null;
+                }
+                else
+                {
+                    return checkItemInventoryByItemId;
+                }
+            }
+
+          
+        }
+
+        public async Task<Inventory> GetItemInventoryByPlayerNotItem(string playerNickName)
+        {
+            var player = await _dbContext.Players
+                           .Where(e => e.Nickname == playerNickName)
+                           .Include(e => e.Inventory).ThenInclude(inventory => inventory.ItemInventories).ThenInclude(x => x.Item)
+                           .FirstOrDefaultAsync();
+
+            if (player == null)
+            {
+                return null; // Xử lý khi không tìm thấy người chơi
+            }
+            else
+            {
+                var inventory = await _dbContext.Inventories.Where(x => x.PlayerId == player.Id).FirstOrDefaultAsync();
+                if(inventory != null)
+                {
+                    return inventory;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+        }
+
         public async Task<GetListItemInventoryByPlayer> GetListItemInventoryByPlayer(string PlayerNickName)
         {
             var player = await _dbContext.Players
@@ -86,5 +138,6 @@ namespace DataAccess.Repositories.ItemInventoryRepositories
            
         }
 
+    
     }
 }

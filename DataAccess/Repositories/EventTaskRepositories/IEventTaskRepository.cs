@@ -17,6 +17,7 @@ namespace DataAccess.Repositories.EventTaskRepositories
         Task<IEnumerable<EventTaskDto>> GetEventTaskByEventId(Guid eventId);
         Task<IEnumerable<EventTaskDto>> GetEventTaskWithTypeByEventId(Guid eventId);
         Task<int> GetPriorityByEventTask(Guid eventId, Guid? majorId);
+        Task<bool> CheckEventTaskHavePlayerHistory(Guid eventTaskId);
 
         Task<IEnumerable<GetTaskByEventIdDto>> GetTaskByEventTaskWithEventId(Guid eventId);
 

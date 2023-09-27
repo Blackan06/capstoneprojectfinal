@@ -105,5 +105,29 @@ namespace FPTHCMAdventuresAPI.Controllers
                 return StatusCode(500, "Internal server error: " + ex.Message);
             }
         }
+        [HttpPut]
+        [Route("sendgiftplayer1toplayer2/{playernickname1}/{playernickname2}/{itemId}")]
+
+        public async Task<ActionResult<ServiceResponse<GetItemInventoryDto>>> SendGiftPlayer1ToPlayer2(string playernickname1, string playernickname2, Guid itemId)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+                var res = await _itemInventoryService.UpdateItemInventoryByPlayer1ToPlayer2(playernickname1, playernickname2, itemId);
+                if (!res.Success)
+                {
+                    return BadRequest(res);
+                }
+                return Ok(res);
+            }
+            catch (Exception ex)
+            {
+
+                return StatusCode(500, "Internal server error: " + ex.Message);
+            }
+        }
     }
 }

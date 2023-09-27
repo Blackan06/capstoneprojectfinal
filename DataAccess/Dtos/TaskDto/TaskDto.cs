@@ -9,9 +9,13 @@ namespace DataAccess.Dtos.TaskDto
     public class TaskDto : IBaseDto
     {
         public Guid Id { get; set; }
+        public string LocationId { get; set; }
         public string LocationName { get; set; }
+        public string MajorId { get; set; }
         public string MajorName { get; set; }
+        public string NpcId { get; set; }
         public string NpcName { get; set; }
+        public string ItemId { get; set; }
         public string ItemName { get; set; }
         public string Name { get; set; }
         public string Type { get; set; }
